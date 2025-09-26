@@ -1,0 +1,14 @@
+{
+    "extends": "@apify/tsconfig",
+    "compilerOptions": {
+        "module": "NodeNext",
+        "moduleResolution": "NodeNext",
+        "target": "ES2022",
+        "outDir": "dist",
+        "strict": true,
+        "noUnusedLocals": false,
+        "skipLibCheck": true,
+        "lib": ["DOM"]
+    },
+    "include": ["./src/**/*", "./index.ts"]
+}

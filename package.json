@@ -1,0 +1,35 @@
+{
+    "name": "typed-actor-configs",
+    "version": "0.0.1",
+    "description": "Define Apify Actor inputs and outputs in a convenient and type-safe way that does not increase bundle size",
+    "main": "index.ts",
+    "scripts": {
+        "test": "vitest run"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/apify-projects/typed-actor-configs.git"
+    },
+    "keywords": [
+        "apify",
+        "actor",
+        "scraping",
+        "typescript"
+    ],
+    "author": "Apify",
+    "license": "MIT",
+    "bugs": {
+        "url": "https://github.com/apify-projects/typed-actor-configs/issues"
+    },
+    "homepage": "https://github.com/apify-projects/typed-actor-configs#readme",
+    "dependencies": {
+        "zod": "^4.1.11"
+    },
+    "devDependencies": {
+        "@apify/eslint-config": "^1.1.0",
+        "@apify/tsconfig": "^0.1.1",
+        "@types/node": "^24.5.2",
+        "typescript": "^5.9.2",
+        "vitest": "^3.2.4"
+    }
+}
