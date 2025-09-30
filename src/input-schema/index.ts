@@ -2,12 +2,13 @@ import z from 'zod';
 import { stringPropertySchema, type StringPropertyInput } from './string-property/index.ts';
 import { booleanPropertySchema, type BooleanPropertyInput } from './boolean-property/index.ts';
 import { integerPropertySchema, type IntegerPropertyInput } from './integer-property/index.ts';
+import { enumPropertySchema, type EnumPropertyInput } from './enum-property/index.ts';
 import { type CollapseIntersection } from '../utility-types/collapse-intersection/index.ts';
 import { writeFileSync, readFileSync, existsSync, mkdirSync } from 'fs';
 import { checkIntegrity, hashConfigurationFile } from '../versioning/config-file-hash/index.ts';
 import { diffConfigurations } from '../versioning/config-diff/index.ts';
 
-const propertyTypesSchemas = [stringPropertySchema, booleanPropertySchema, integerPropertySchema];
+const propertyTypesSchemas = [stringPropertySchema, booleanPropertySchema, integerPropertySchema, enumPropertySchema];
 const propertyTypes = z.union(propertyTypesSchemas);
 
 type AnyProperty = z.infer<typeof propertyTypes>;
@@ -20,6 +21,8 @@ type inferProperty<Input extends z.infer<(typeof propertyTypesSchemas)[number]>>
     ? BooleanPropertyInput
     : Input extends z.infer<typeof integerPropertySchema>
     ? IntegerPropertyInput
+    : Input extends z.infer<typeof enumPropertySchema> & { enum: (infer Item)[] }
+    ? Item
     : never;
 
 type inferPropertyTypesSchemas<Input extends z.infer<(typeof propertyTypesSchemas)[number]>> = Input extends {

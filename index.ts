@@ -34,8 +34,15 @@ export const input = defineInputConfiguration({
             description: 'some number prop',
             editor: 'number',
         },
+        enumProp: {
+            type: 'string',
+            title: 'some enum prop',
+            description: 'some enum prop',
+            enum: ['a', 'b', 'c'] as const,
+            nullable: true,
+        },
     },
-    required: ['booleanProp', 'numberProp'],
+    required: ['booleanProp', 'numberProp', 'enumProp'],
 });
 
 export type Input = inferInput<typeof input>;
