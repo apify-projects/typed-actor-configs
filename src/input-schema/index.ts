@@ -1,16 +1,19 @@
 import z from 'zod';
 import { stringPropertySchema, type StringPropertyInput } from './string-property/index.ts';
+import { booleanPropertySchema, type BooleanPropertyInput } from './boolean-property/index.ts';
 import { type CollapseIntersection } from '../utility-types/collapse-intersection/index.ts';
 import { type NullableFields } from '../utility-types/nullability.ts';
 import { writeFileSync, readFileSync, existsSync, mkdirSync } from 'fs';
 import { checkIntegrity, hashConfigurationFile } from '../versioning/config-file-hash/index.ts';
 import { diffConfigurations } from '../versioning/config-diff/index.ts';
 
-const propertyTypesSchemas = [stringPropertySchema];
+const propertyTypesSchemas = [stringPropertySchema, booleanPropertySchema];
 type inferPropertyTypesSchemas<Input extends z.infer<(typeof propertyTypesSchemas)[number]>> = Input extends z.infer<
     typeof stringPropertySchema
 >
     ? StringPropertyInput
+    : Input extends z.infer<typeof booleanPropertySchema>
+    ? BooleanPropertyInput
     : never;
 
 const inputSchema = z.object({
