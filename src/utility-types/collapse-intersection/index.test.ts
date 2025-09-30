@@ -1,5 +1,5 @@
 import { expectTypeOf, test } from 'vitest';
-import { CollapseIntersection } from '.';
+import { CollapseIntersection } from './index.ts';
 
 test('CollapseIntersection', () => {
     type A = { a?: string; b?: string };

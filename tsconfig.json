@@ -8,7 +8,9 @@
         "strict": true,
         "noUnusedLocals": false,
         "skipLibCheck": true,
-        "lib": ["DOM"]
+        "noEmit": true,
+        "allowImportingTsExtensions": true,
+        "lib": ["ESNext"]
     },
-    "include": ["./src/**/*", "./index.ts"]
+    "include": ["./src/**/*", "index.ts"]
 }

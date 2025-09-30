@@ -1,0 +1,15 @@
+{
+    "title": "Scrape data from a web page",
+    "schemaVersion": 1,
+    "type": "object",
+    "properties": {
+        "meme": {
+            "type": "string",
+            "title": "meeme",
+            "description": "Some are good, yours are bad",
+            "nullable": true,
+            "editor": "textfield"
+        }
+    },
+    "_hash": "7bcad5724c33d76d1f58441110ba0704d2d05e24"
+}

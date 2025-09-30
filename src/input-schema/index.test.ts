@@ -1,5 +1,5 @@
 import { test, expectTypeOf } from 'vitest';
-import { defineInputConfiguration, inferInput } from '.';
+import { defineInputConfiguration, inferInput } from './index.ts';
 
 test('inferInput', () => {
     const configuration = defineInputConfiguration({
