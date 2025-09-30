@@ -1,4 +1,4 @@
-import { defineInputConfiguration, requiredKeys, type inferInput } from './src/input-schema/index.ts';
+import { defineInputConfiguration, type inferInput } from './src/input-schema/index.ts';
 
 export const input = defineInputConfiguration({
     title: 'Scrape data from a web page',

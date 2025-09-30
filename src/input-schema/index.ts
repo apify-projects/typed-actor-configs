@@ -44,14 +44,19 @@ type consistentRequired<T extends InputSchema> = T extends { properties: Record<
  * @returns The same input schema, to be used for input type inference
  */
 export function defineInputConfiguration<
-    // `Requireds` is the type of all required fields, used to make them pass untouched
-    Requireds extends string,
     // `InputConfiguration` is the input schema, with all properties and required fields
-    InputConfiguration extends InputSchema
+    InputConfiguration extends InputSchema,
+    // `Properties` is the type of all properties, used to allow for intellisense to suggest properties for required fields
+    Properties extends string,
+    // `Requireds` is the type of all required fields, used to make them pass untouched
+    Requireds extends Properties
 >(
     // `consistentRequired` forces the required fields to be a subset of the property keys
     // Allowing for intellisense to recommend the required fields based on the properties
-    input: consistentRequired<InputConfiguration> & { required?: Requireds[] }
+    input: consistentRequired<InputConfiguration & { properties: { [Key in Properties]: unknown } }> & {
+        required?: Requireds[];
+    }
+    // | { required?: Properties[] }
     // `InputConfiguration` is not specific enough, so we need to add the required fields explicitly
     // using the `consistentRequired` type would end up with a union of all property keys (which breaks the inference)
 ): InputConfiguration & { required?: Requireds[] } {
@@ -95,8 +100,7 @@ export type inferInput<Input extends InputSchema> = CollapseIntersection<
             Input['properties'][Key]
         >;
     } & {
-        [Key in keyof Pick<Input['properties'], requiredKeys<Input>>]: inferPropertyTypesSchemas<
-            Input['properties'][Key]
-        >;
+        // Not using `Pick` here because it adds a '' key to the object, due to the requiredKeys ternary
+        [Key in keyof Input['properties'] & requiredKeys<Input>]: inferPropertyTypesSchemas<Input['properties'][Key]>;
     }
 >;
