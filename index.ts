@@ -1,4 +1,4 @@
-import { defineInputConfiguration, type inferInput } from './src/input-schema/index.ts';
+import { defineInputConfiguration, requiredKeys, type inferInput } from './src/input-schema/index.ts';
 
 export const input = defineInputConfiguration({
     title: 'Scrape data from a web page',
@@ -28,7 +28,14 @@ export const input = defineInputConfiguration({
             nullable: true,
             default: null,
         },
+        numberProp: {
+            type: 'integer',
+            title: 'some number prop',
+            description: 'some number prop',
+            editor: 'number',
+        },
     },
+    required: ['booleanProp', 'numberProp'],
 });
 
 export type Input = inferInput<typeof input>;
