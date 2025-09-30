@@ -8,6 +8,10 @@ import { checkIntegrity, hashConfigurationFile } from '../versioning/config-file
 import { diffConfigurations } from '../versioning/config-diff/index.ts';
 
 const propertyTypesSchemas = [stringPropertySchema, booleanPropertySchema, integerPropertySchema];
+const propertyTypes = z.union(propertyTypesSchemas);
+
+type AnyProperty = z.infer<typeof propertyTypes>;
+
 type inferProperty<Input extends z.infer<(typeof propertyTypesSchemas)[number]>> = Input extends z.infer<
     typeof stringPropertySchema
 >
@@ -32,7 +36,8 @@ const inputSchema = z.object({
     properties: z.record(z.string(), z.union(propertyTypesSchemas)),
     required: z.array(z.string()).optional(),
 });
-type InputSchema = z.infer<typeof inputSchema>;
+
+type InputSchema = z.input<typeof inputSchema>;
 
 // Used to make sure that the strings in required match the keys of the properties
 type consistentRequired<T extends InputSchema> = T extends { properties: Record<infer R, any> }
@@ -53,7 +58,7 @@ export function defineInputConfiguration<
 >(
     // `consistentRequired` forces the required fields to be a subset of the property keys
     // Allowing for intellisense to recommend the required fields based on the properties
-    input: consistentRequired<InputConfiguration & { properties: { [Key in Properties]: unknown } }> & {
+    input: consistentRequired<InputConfiguration & { properties: { [Key in Properties]: AnyProperty } }> & {
         required?: Requireds[];
     }
     // | { required?: Properties[] }
@@ -92,15 +97,13 @@ export function defineInputConfiguration<
 // For { required: ['a', 'b'] } it will return 'a' | 'b'
 export type requiredKeys<T extends InputSchema> = T extends { required: (infer R)[] } ? R : '';
 
-// For each required field, it will return the type of the property
-// For each nullable field, it will return the type of the property | undefined
+// CollapseIntersection is used to go from {...} & {...} to {...}
 export type inferInput<Input extends InputSchema> = CollapseIntersection<
     {
-        [Key in keyof Omit<Input['properties'], requiredKeys<Input>>]?: inferPropertyTypesSchemas<
+        [Key in keyof Input['properties'] & requiredKeys<Input>]: inferPropertyTypesSchemas<Input['properties'][Key]>;
+    } & {
+        [Key in Exclude<keyof Input['properties'], requiredKeys<Input>>]?: inferPropertyTypesSchemas<
             Input['properties'][Key]
         >;
-    } & {
-        // Not using `Pick` here because it adds a '' key to the object, due to the requiredKeys ternary
-        [Key in keyof Input['properties'] & requiredKeys<Input>]: inferPropertyTypesSchemas<Input['properties'][Key]>;
     }
 >;
