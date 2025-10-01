@@ -6,7 +6,10 @@
     "type": "module",
     "scripts": {
         "test": "vitest run",
-        "run": "node index.ts"
+        "run": "node index.ts",
+        "no-diff": "node index.ts --no-diff",
+        "overwrite": "node index.ts --overwrite",
+        "dry-run": "node index.ts --dry-run"
     },
     "repository": {
         "type": "git",

@@ -41,8 +41,17 @@ export const input = defineInputConfiguration({
             enum: ['a', 'b', 'c'] as const,
             nullable: true,
         },
+        arrayProp: {
+            title: 'meme',
+            description: 'meeme',
+            type: 'array',
+            editor: 'stringList',
+            items: {
+                type: 'string',
+            },
+        },
     },
-    required: ['booleanProp', 'numberProp', 'enumProp'],
+    required: ['booleanProp', 'numberProp', 'enumProp', 'arrayProp'],
 });
 
 export type Input = inferInput<typeof input>;
