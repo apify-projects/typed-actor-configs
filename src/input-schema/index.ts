@@ -84,7 +84,7 @@ export function defineInputConfiguration<
     // Allowing for intellisense to recommend the required fields based on the properties
     input: consistentRequired<InputConfiguration & { properties: { [Key in Properties]: AnyProperty } }> & {
         required?: Requireds[];
-    }
+    } & InputSchema
     // | { required?: Properties[] }
     // `InputConfiguration` is not specific enough, so we need to add the required fields explicitly
     // using the `consistentRequired` type would end up with a union of all property keys (which breaks the inference)
