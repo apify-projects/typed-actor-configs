@@ -53,6 +53,8 @@ const input = (await Actor.getInput<ActorInput>())!;
 // your type-safe code here
 ```
 
+**Note:** As long as the **only export** of the file is the inferred type, your build size will not increase and the input_schema.json file will not be generated when running your actor (either locally or on Apify Cloud).
+
 ## How to run
 
 Now that we have our input configuration, we can run the file to generate the `input_schema.json` file.

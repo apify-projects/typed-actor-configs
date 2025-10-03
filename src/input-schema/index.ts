@@ -95,22 +95,38 @@ export function defineInputConfiguration<
     const hashedInput = hashConfigurationFile(input, inputSchema);
     if (!configExists) {
         console.log('No input schema found, will write to .actor/input_schema.json');
-        createPathToFile(path);
-        if (execArgs.dryRun()) {
+        if (execArgs.noDiff()) {
             process.exit(1);
         }
+        createPathToFile(path);
         writeFileSync('.actor/input_schema.json', JSON.stringify(hashedInput, null, 4));
         return input;
     }
     const previousConfig = readFileSync('.actor/input_schema.json', 'utf-8');
     const integrity = checkIntegrity(previousConfig, inputSchema);
     const parsedPreviousConfig = inputSchema.safeParse(JSON.parse(previousConfig));
+
+    const diff = diffConfigurations(parsedPreviousConfig, input);
+
+    if (diff && execArgs.noDiff()) {
+        console.log('Schema differences found, but --no-diff was set, exiting');
+        process.exit(1);
+    }
+
     if (integrity === 'Passed') {
-        diffConfigurations(parsedPreviousConfig, input);
+        if (diff) {
+            console.log(`Writing new input schema to ${path}`);
+            if (execArgs.dryRun()) {
+                console.log('Dry run, not writing file');
+            } else {
+                console.log('Updating input schema');
+                writeFileSync(path, JSON.stringify(hashedInput, null, 4));
+            }
+        }
     } else {
-        diffConfigurations(parsedPreviousConfig, input);
+        console.log('Integrity check failed, schema was modified manually');
         if (execArgs.overwrite()) {
-            console.log('Input schema changed manually, overwriting');
+            console.log('--overwrite was set, overwriting file');
             writeFileSync('.actor/input_schema.json', JSON.stringify(hashedInput, null, 4));
         } else {
             console.warn(`${yellowBG('WARNING:')} Input schema changed manually, check changes`);

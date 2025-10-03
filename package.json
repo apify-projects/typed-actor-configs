@@ -1,6 +1,6 @@
 {
     "name": "typed-actor-configs",
-    "version": "0.0.1",
+    "version": "0.1.0",
     "description": "Define Apify Actor inputs and outputs in a convenient and type-safe way that does not increase bundle size",
     "main": "index.ts",
     "type": "module",

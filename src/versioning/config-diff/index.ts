@@ -5,7 +5,7 @@ const { diff } = deepDiff;
 export function diffConfigurations(oldConfig: any, newConfig: any) {
     const diffResult = diff(oldConfig, newConfig);
     if (!diffResult || diffResult.length === 0) {
-        return;
+        return false;
     }
     let path;
     console.log(`\n\n█████ Diffing previous configuration █████`);
@@ -32,6 +32,7 @@ export function diffConfigurations(oldConfig: any, newConfig: any) {
         }
         console.log();
     }
+    return true;
 }
 
 function getPathToChange(diff: any[] | undefined = []) {
