@@ -7,9 +7,57 @@
             "type": "string",
             "title": "meeme",
             "description": "Some are good, yours are bad",
-            "nullable": true,
             "editor": "textfield"
+        },
+        "nullableProp": {
+            "type": "string",
+            "title": "some nullable prop",
+            "description": "some nullable prop",
+            "nullable": true,
+            "editor": "datepicker",
+            "default": "2023-02-09T01:25:37",
+            "dateType": "absolute"
+        },
+        "booleanProp": {
+            "type": "boolean",
+            "title": "some boolean prop",
+            "description": "some boolean prop",
+            "nullable": true,
+            "editor": "checkbox",
+            "default": null
+        },
+        "numberProp": {
+            "type": "integer",
+            "title": "some number prop",
+            "description": "some number prop",
+            "editor": "number"
+        },
+        "enumProp": {
+            "type": "string",
+            "title": "some enum prop",
+            "description": "some enum prop",
+            "enum": [
+                "a",
+                "b",
+                "c"
+            ],
+            "nullable": true
+        },
+        "arrayProp": {
+            "type": "array",
+            "title": "meme",
+            "description": "meeme",
+            "editor": "stringList",
+            "items": {
+                "type": "string"
+            }
         }
     },
-    "_hash": "7bcad5724c33d76d1f58441110ba0704d2d05e24"
+    "required": [
+        "booleanProp",
+        "numberProp",
+        "enumProp",
+        "arrayProp"
+    ],
+    "_hash": "c3399505b84ff0ff22be724da56bb7332453c67d"
 }

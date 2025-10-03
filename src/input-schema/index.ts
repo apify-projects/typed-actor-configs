@@ -105,8 +105,16 @@ export function defineInputConfiguration<
     const previousConfig = readFileSync('.actor/input_schema.json', 'utf-8');
     const integrity = checkIntegrity(previousConfig, inputSchema);
     const parsedPreviousConfig = inputSchema.safeParse(JSON.parse(previousConfig));
+    if (!parsedPreviousConfig.success) {
+        console.log('Previous input schema is invalid, overwriting');
+        if (execArgs.noDiff()) {
+            process.exit(1);
+        }
+        writeFileSync('.actor/input_schema.json', JSON.stringify(hashedInput, null, 4));
+        return input;
+    }
 
-    const diff = diffConfigurations(parsedPreviousConfig, input);
+    const diff = diffConfigurations(parsedPreviousConfig.data, input);
 
     if (diff && execArgs.noDiff()) {
         console.log('Schema differences found, but --no-diff was set, exiting');
@@ -122,6 +130,8 @@ export function defineInputConfiguration<
                 console.log('Updating input schema');
                 writeFileSync(path, JSON.stringify(hashedInput, null, 4));
             }
+        } else {
+            console.log('No changes found.');
         }
     } else {
         console.log('Integrity check failed, schema was modified manually');
