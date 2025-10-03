@@ -121,7 +121,7 @@ export function defineInputConfiguration<
 }
 
 // For { required: ['a', 'b'] } it will return 'a' | 'b'
-export type requiredKeys<T extends InputSchema> = T extends { required: (infer R)[] } ? R : '';
+type requiredKeys<T extends InputSchema> = T extends { required: (infer R)[] } ? R : '';
 
 // CollapseIntersection is used to go from {...} & {...} to {...}
 export type inferInput<Input extends InputSchema> = CollapseIntersection<
