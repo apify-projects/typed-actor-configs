@@ -26,9 +26,6 @@ const minimalInput = defineMinimalInputConfiguration('.actor/input_schema.json',
         arrayProp: {
             type: 'array',
             editor: 'stringList',
-            items: {
-                type: 'string',
-            },
         },
     },
     required: ['booleanProp', 'numberProp', 'enumProp'],

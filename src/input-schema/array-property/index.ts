@@ -7,9 +7,11 @@ const arrayTypesSchema = z.object({
 });
 const minimalStringArraySchema = z.object({
     editor: z.literal('stringList'),
-    items: z.object({
-        type: z.literal('string'),
-    }),
+    items: z
+        .object({
+            type: z.literal('string'),
+        })
+        .optional(),
 });
 
 export const minimalArraySchema = arrayTypesSchema.and(z.union([minimalStringArraySchema]));

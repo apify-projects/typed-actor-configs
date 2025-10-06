@@ -8,9 +8,9 @@ declare const arrayTypesSchema: z.ZodObject<{
 }, z.z.core.$strip>;
 declare const minimalStringArraySchema: z.ZodObject<{
     editor: z.ZodLiteral<"stringList">;
-    items: z.ZodObject<{
+    items: z.ZodOptional<z.ZodObject<{
         type: z.ZodLiteral<"string">;
-    }, z.z.core.$strip>;
+    }, z.z.core.$strip>>;
 }, z.z.core.$strip>;
 export declare const minimalArraySchema: z.ZodIntersection<z.ZodObject<{
     type: z.ZodEnum<{
@@ -20,9 +20,9 @@ export declare const minimalArraySchema: z.ZodIntersection<z.ZodObject<{
     default: z.ZodOptional<z.ZodNever>;
 }, z.z.core.$strip>, z.ZodUnion<readonly [z.ZodObject<{
     editor: z.ZodLiteral<"stringList">;
-    items: z.ZodObject<{
+    items: z.ZodOptional<z.ZodObject<{
         type: z.ZodLiteral<"string">;
-    }, z.z.core.$strip>;
+    }, z.z.core.$strip>>;
 }, z.z.core.$strip>]>>;
 export declare const arrayPropertySchema: z.ZodIntersection<z.ZodIntersection<z.ZodIntersection<z.ZodObject<{
     type: z.ZodEnum<{
@@ -32,22 +32,22 @@ export declare const arrayPropertySchema: z.ZodIntersection<z.ZodIntersection<z.
     default: z.ZodOptional<z.ZodNever>;
 }, z.z.core.$strip>, z.ZodUnion<readonly [z.ZodObject<{
     editor: z.ZodLiteral<"stringList">;
-    items: z.ZodObject<{
+    items: z.ZodOptional<z.ZodObject<{
         type: z.ZodLiteral<"string">;
-    }, z.z.core.$strip>;
+    }, z.z.core.$strip>>;
 }, z.z.core.$strip>]>>, z.ZodObject<{
     title: z.ZodString;
     description: z.ZodString;
     editor: z.ZodEnum<{
-        hidden: "hidden";
         stringList: "stringList";
-        select: "select";
         json: "json";
         requestListSources: "requestListSources";
         pseudoUrls: "pseudoUrls";
         globs: "globs";
         keyValue: "keyValue";
+        select: "select";
         schemaBased: "schemaBased";
+        hidden: "hidden";
     }>;
     isSecret: z.ZodOptional<z.ZodBoolean>;
     prefill: z.ZodOptional<z.ZodArray<z.ZodAny>>;
