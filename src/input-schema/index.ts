@@ -5,7 +5,7 @@ import { integerPropertySchema, type IntegerPropertyInput } from './integer-prop
 import { enumPropertySchema, type EnumPropertyInput } from './enum-property/index.ts';
 import { type CollapseIntersection } from '../utility-types/collapse-intersection/index.ts';
 import { writeFileSync, readFileSync, existsSync, mkdirSync } from 'fs';
-import { checkIntegrity, hashConfigurationFile } from '../versioning/config-file-hash/index.ts';
+import { checkIntegrity, hashConfigurationFile, Hashed } from '../versioning/config-file-hash/index.ts';
 import { diffConfigurations } from '../versioning/config-diff/index.ts';
 import { arrayPropertySchema, type ArrayPropertyType } from './array-property/index.ts';
 import { execArgs, initializeExecArgs } from './exec-args.ts';
@@ -67,6 +67,12 @@ function createPathToFile(path: string) {
         }
     }
 }
+
+function writeSchemaFile(path: string, content: Hashed<InputSchema>) {
+    const { _hash, ...rest } = content;
+    writeFileSync(path, JSON.stringify(rest, null, 4));
+}
+
 /**
  * @param input The input schema to be emmited
  * @returns The same input schema, to be used for input type inference
@@ -98,10 +104,10 @@ export function defineInputConfiguration<
             process.exit(1);
         }
         createPathToFile(path);
-        writeFileSync('.actor/input_schema.json', JSON.stringify(hashedInput, null, 4));
+        writeSchemaFile(path, hashedInput);
         return input;
     }
-    const previousConfig = readFileSync('.actor/input_schema.json', 'utf-8');
+    const previousConfig = readFileSync(path, 'utf-8');
     const integrity = checkIntegrity(previousConfig, inputSchema);
     const parsedPreviousConfig = inputSchema.safeParse(JSON.parse(previousConfig));
     if (!parsedPreviousConfig.success) {
@@ -109,7 +115,7 @@ export function defineInputConfiguration<
         if (execArgs.noDiff()) {
             process.exit(1);
         }
-        writeFileSync('.actor/input_schema.json', JSON.stringify(hashedInput, null, 4));
+        writeSchemaFile(path, hashedInput);
         return input;
     }
 
@@ -127,7 +133,7 @@ export function defineInputConfiguration<
                 console.log('Dry run, not writing file');
             } else {
                 console.log('Updating input schema');
-                writeFileSync(path, JSON.stringify(hashedInput, null, 4));
+                writeSchemaFile(path, hashedInput);
             }
         } else {
             console.log('No changes found.');
@@ -136,7 +142,7 @@ export function defineInputConfiguration<
         console.log('Integrity check failed, schema was modified manually');
         if (execArgs.overwrite()) {
             console.log('--overwrite was set, overwriting file');
-            writeFileSync('.actor/input_schema.json', JSON.stringify(hashedInput, null, 4));
+            writeSchemaFile(path, hashedInput);
         } else {
             console.warn(`${yellowBG('WARNING:')} Input schema changed manually, check changes`);
             process.exit(1);

@@ -2,7 +2,7 @@ import { hash } from 'crypto';
 import z, { ZodObject } from 'zod';
 import { green, red, redBG, yellowBG } from '../../text-coloring/index.ts';
 
-type Hashed<T extends {}> = T & { _hash: string };
+export type Hashed<T extends {}> = T & { _hash: string };
 
 function toHashedSchema<Schema extends ZodObject>(schema: Schema) {
     return z.object({ _hash: z.hash('sha1').optional() }).and(schema);
