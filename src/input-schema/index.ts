@@ -66,6 +66,7 @@ export function defineInputConfiguration<
     // `Requireds` is the type of all required fields, used to make them pass untouched
     Requireds extends Properties
 >(
+    path: `${string}/input_schema.json`,
     // `consistentRequired` forces the required fields to be a subset of the property keys
     // Allowing for intellisense to recommend the required fields based on the properties
     input: consistentRequired<InputConfiguration & { properties: { [Key in Properties]: AnyProperty } }> & {
@@ -76,7 +77,6 @@ export function defineInputConfiguration<
     // using the `consistentRequired` type would end up with a union of all property keys (which breaks the inference)
 ): InputConfiguration & { required?: Requireds[] } {
     initializeExecArgs();
-    const path = '.actor/input_schema.json';
     const configExists = existsSync(path);
     const hashedInput = hashConfigurationFile(input, inputSchema);
     if (!configExists) {
@@ -156,12 +156,12 @@ export function defineMinimalInputConfiguration<
     Requireds extends Properties,
     Schema extends MinimalInputSchema
 >(
+    path: `${string}/input_schema.json`,
     input: Schema & {
         properties: { [Key in Properties]: MinimalProperty };
         required?: Requireds[];
     } & MinimalInputSchema
 ): Schema {
-    const path = '.actor/input_schema.json';
     const configExists = existsSync(path);
     if (!configExists) {
         console.log('No input schema found, nothing to check integrity against');

@@ -1,14 +1,14 @@
 import z from 'zod';
-import { stringPropertySchema } from "./string-property/index.js";
-import { booleanPropertySchema } from "./boolean-property/index.js";
-import { integerPropertySchema } from "./integer-property/index.js";
-import { enumPropertySchema } from "./enum-property/index.js";
+import { minimalStringSchema, stringPropertySchema } from "./string-property/index.js";
+import { booleanPropertySchema, minimalBooleanSchema } from "./boolean-property/index.js";
+import { integerPropertySchema, minimalIntegerSchema } from "./integer-property/index.js";
+import { enumPropertySchema, minimalEnumSchema } from "./enum-property/index.js";
 import { writeFileSync, readFileSync, existsSync, mkdirSync } from 'fs';
 import { checkIntegrity, hashConfigurationFile } from "../versioning/config-file-hash/index.js";
 import { diffConfigurations } from "../versioning/config-diff/index.js";
-import { arrayPropertySchema } from "./array-property/index.js";
+import { arrayPropertySchema, minimalArraySchema } from "./array-property/index.js";
 import { execArgs, initializeExecArgs } from "./exec-args.js";
-import { yellowBG } from "../text-coloring/index.js";
+import { greenBG, redBG, yellowBG } from "../text-coloring/index.js";
 const propertyTypesSchemas = [
     stringPropertySchema,
     booleanPropertySchema,
@@ -42,7 +42,7 @@ function writeSchemaFile(path, content) {
  * @param input The input schema to be emmited
  * @returns The same input schema, to be used for input type inference
  */
-export function defineInputConfiguration(
+export function defineInputConfiguration(path, 
 // `consistentRequired` forces the required fields to be a subset of the property keys
 // Allowing for intellisense to recommend the required fields based on the properties
 input
@@ -51,7 +51,6 @@ input
 // using the `consistentRequired` type would end up with a union of all property keys (which breaks the inference)
 ) {
     initializeExecArgs();
-    const path = '.actor/input_schema.json';
     const configExists = existsSync(path);
     const hashedInput = hashConfigurationFile(input, inputSchema);
     if (!configExists) {
@@ -105,6 +104,39 @@ input
             process.exit(1);
         }
     }
+    return input;
+}
+const allMinimalSchemas = [
+    minimalEnumSchema,
+    minimalStringSchema,
+    minimalArraySchema,
+    minimalBooleanSchema,
+    minimalIntegerSchema,
+];
+const minimalPropertyTypesSchema = z.union(allMinimalSchemas);
+const minimalInputSchema = z.object({
+    properties: z.record(z.string(), minimalPropertyTypesSchema),
+    required: z.array(z.string()).optional(),
+});
+export function defineMinimalInputConfiguration(path, input) {
+    const configExists = existsSync(path);
+    if (!configExists) {
+        console.log('No input schema found, nothing to check integrity against');
+        process.exit(1);
+    }
+    const previousConfig = readFileSync(path, 'utf-8');
+    checkIntegrity(previousConfig, minimalInputSchema);
+    const parsedPreviousConfig = minimalInputSchema.safeParse(JSON.parse(previousConfig));
+    if (!parsedPreviousConfig.success) {
+        console.log('Previous input schema is invalid, cannot check integrity');
+        process.exit(1);
+    }
+    const hasDiff = diffConfigurations(parsedPreviousConfig.data, input);
+    if (hasDiff) {
+        console.log(`\n${redBG('FAILED')}: Type-critical fields dont match, check changes`);
+        process.exit(1);
+    }
+    console.log(`\n${greenBG('PASSED')}: No differences found on type-critical fields`);
     return input;
 }
 //# sourceMappingURL=index.js.map

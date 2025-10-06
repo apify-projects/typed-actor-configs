@@ -1,7 +1,7 @@
 import z from 'zod';
 import { defineInputConfiguration, defineMinimalInputConfiguration, type inferInput } from './index.ts';
 
-export const input = defineInputConfiguration({
+export const input = defineInputConfiguration('.actor/input_schema.json', {
     title: 'Scrape data from a web page',
     schemaVersion: 1,
     type: 'object',

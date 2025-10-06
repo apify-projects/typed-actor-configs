@@ -1,6 +1,17 @@
 import z from 'zod';
-const baseArrayPropertySchema = z.object({
+const arrayTypesSchema = z.object({
     type: z.enum(['array']),
+    nullable: z.boolean().optional(),
+    default: z.never().optional(),
+});
+const minimalStringArraySchema = z.object({
+    editor: z.literal('stringList'),
+    items: z.object({
+        type: z.literal('string'),
+    }),
+});
+export const minimalArraySchema = arrayTypesSchema.and(z.union([minimalStringArraySchema]));
+const baseArrayPropertySchema = minimalArraySchema.and(z.object({
     title: z.string(),
     description: z.string(),
     editor: z.enum([
@@ -18,7 +29,6 @@ const baseArrayPropertySchema = z.object({
     isSecret: z.boolean().optional(),
     prefill: z.array(z.any()).optional(),
     example: z.array(z.any()).optional(),
-    nullable: z.boolean().optional(),
     minItems: z.number().optional(),
     maxItems: z.number().optional(),
     uniqueItems: z.boolean().optional(),
@@ -26,7 +36,7 @@ const baseArrayPropertySchema = z.object({
     sectionDescription: z.string().optional(),
     placeholderKey: z.string().optional(),
     placeholderValue: z.string().optional(),
-});
+}));
 const stringListSchema = z.object({
     editor: z.enum(['stringList']),
     items: z.object({

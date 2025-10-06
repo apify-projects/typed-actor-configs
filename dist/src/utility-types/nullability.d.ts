@@ -44,4 +44,27 @@ export type RequiredFields<Input extends {
 }> = {
     [Key in keyof Input['properties']]: Input['properties'][Key]['nullable'] extends true ? never : Key;
 }[keyof Input['properties']];
+/**
+ * Utility type to get the keys of a configuration that have a default value
+ *
+ * @example
+ * ```ts
+ * type Input = {
+ *   properties: {
+ *     a: { default: string },
+ *     b: { default: string },
+ *     c: {  },
+ *   }
+ * }
+ * // "a" | "c"
+ * type DefaultedFields = GetDefaultedFields<Input>
+ * ```
+ */
+export type DefaultedFields<Input extends {
+    properties: Record<string, {
+        default?: unknown;
+    } | {}>;
+}> = {
+    [Key in keyof Input['properties']]: 'default' extends keyof Input['properties'][Key] ? Input['properties'][Key]['default'] extends undefined ? never : Key : never;
+}[keyof Input['properties']];
 //# sourceMappingURL=nullability.d.ts.map

@@ -1,6 +1,6 @@
 import { defineMinimalInputConfiguration, type inferInput } from './index.ts';
 
-const minimalInput = defineMinimalInputConfiguration({
+const minimalInput = defineMinimalInputConfiguration('.actor/input_schema.json', {
     properties: {
         meme: {
             type: 'string',

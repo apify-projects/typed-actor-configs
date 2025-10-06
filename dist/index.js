@@ -1,3 +1,3 @@
-import { defineInputConfiguration } from "./src/input-schema/index.js";
-export { defineInputConfiguration };
+import { defineInputConfiguration, defineMinimalInputConfiguration, } from "./src/input-schema/index.js";
+export { defineInputConfiguration, defineMinimalInputConfiguration };
 //# sourceMappingURL=index.js.map
