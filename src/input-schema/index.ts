@@ -1,15 +1,16 @@
 import z from 'zod';
-import { stringPropertySchema, type StringPropertyInput } from './string-property/index.ts';
-import { booleanPropertySchema, type BooleanPropertyInput } from './boolean-property/index.ts';
-import { integerPropertySchema, type IntegerPropertyInput } from './integer-property/index.ts';
-import { enumPropertySchema, type EnumPropertyInput } from './enum-property/index.ts';
+import { minimalStringSchema, stringPropertySchema, type StringPropertyInput } from './string-property/index.ts';
+import { booleanPropertySchema, minimalBooleanSchema, type BooleanPropertyInput } from './boolean-property/index.ts';
+import { integerPropertySchema, minimalIntegerSchema, type IntegerPropertyInput } from './integer-property/index.ts';
+import { enumPropertySchema, minimalEnumSchema, type EnumPropertyInput } from './enum-property/index.ts';
 import { type CollapseIntersection } from '../utility-types/collapse-intersection/index.ts';
 import { writeFileSync, readFileSync, existsSync, mkdirSync } from 'fs';
-import { checkIntegrity, hashConfigurationFile, Hashed } from '../versioning/config-file-hash/index.ts';
+import { checkIntegrity, hashConfigurationFile, type Hashed } from '../versioning/config-file-hash/index.ts';
 import { diffConfigurations } from '../versioning/config-diff/index.ts';
-import { arrayPropertySchema, type ArrayPropertyType } from './array-property/index.ts';
+import { arrayPropertySchema, minimalArraySchema, type ArrayPropertyType } from './array-property/index.ts';
 import { execArgs, initializeExecArgs } from './exec-args.ts';
-import { yellowBG } from '../text-coloring/index.ts';
+import { greenBG, redBG, yellowBG } from '../text-coloring/index.ts';
+import { type DefaultedFields } from '../utility-types/nullability.ts';
 
 const propertyTypesSchemas = [
     stringPropertySchema,
@@ -21,26 +22,6 @@ const propertyTypesSchemas = [
 const propertyTypes = z.union(propertyTypesSchemas);
 
 type AnyProperty = z.infer<typeof propertyTypes>;
-
-type inferProperty<Input extends z.infer<(typeof propertyTypesSchemas)[number]>> = Input extends z.infer<
-    typeof stringPropertySchema
->
-    ? StringPropertyInput
-    : Input extends z.infer<typeof booleanPropertySchema>
-    ? BooleanPropertyInput
-    : Input extends z.infer<typeof integerPropertySchema>
-    ? IntegerPropertyInput
-    : Input extends z.infer<typeof enumPropertySchema> & { enum: (infer Item)[] }
-    ? Item
-    : Input extends z.infer<typeof arrayPropertySchema>
-    ? ArrayPropertyType<Input>
-    : never;
-
-type inferPropertyTypesSchemas<Input extends z.infer<(typeof propertyTypesSchemas)[number]>> = Input extends {
-    nullable: true;
-}
-    ? inferProperty<Input> | null
-    : inferProperty<Input>;
 
 const inputSchema = z.object({
     $schema: z.literal('https://apify-projects.github.io/actor-json-schemas/input.schema.json?v=0.1').optional(),
@@ -152,15 +133,86 @@ export function defineInputConfiguration<
 }
 
 // For { required: ['a', 'b'] } it will return 'a' | 'b'
-type requiredKeys<T extends InputSchema> = T extends { required: (infer R)[] } ? R : '';
+type requiredKeys<T extends MinimalInputSchema> = T extends { required: (infer R)[] } ? R : '';
+
+const allMinimalSchemas = [
+    minimalEnumSchema,
+    minimalStringSchema,
+    minimalArraySchema,
+    minimalBooleanSchema,
+    minimalIntegerSchema,
+];
+const minimalPropertyTypesSchema = z.union(allMinimalSchemas);
+export type MinimalProperty = z.infer<typeof minimalPropertyTypesSchema>;
+
+const minimalInputSchema = z.object({
+    properties: z.record(z.string(), minimalPropertyTypesSchema),
+    required: z.array(z.string()).optional(),
+});
+export type MinimalInputSchema = z.infer<typeof minimalInputSchema>;
+
+export function defineMinimalInputConfiguration<
+    Properties extends string,
+    Requireds extends Properties,
+    Schema extends MinimalInputSchema
+>(
+    input: Schema & {
+        properties: { [Key in Properties]: MinimalProperty };
+        required?: Requireds[];
+    } & MinimalInputSchema
+): Schema {
+    const path = '.actor/input_schema.json';
+    const configExists = existsSync(path);
+    if (!configExists) {
+        console.log('No input schema found, nothing to check integrity against');
+        process.exit(1);
+    }
+    const previousConfig = readFileSync(path, 'utf-8');
+    checkIntegrity(previousConfig, minimalInputSchema);
+
+    const parsedPreviousConfig = minimalInputSchema.safeParse(JSON.parse(previousConfig));
+    if (!parsedPreviousConfig.success) {
+        console.log('Previous input schema is invalid, cannot check integrity');
+        process.exit(1);
+    }
+    const hasDiff = diffConfigurations(parsedPreviousConfig.data, input);
+    if (hasDiff) {
+        console.log(`\n${redBG('FAILED')}: Type-critical fields dont match, check changes`);
+        process.exit(1);
+    }
+    console.log(`\n${greenBG('PASSED')}: No differences found on type-critical fields`);
+    return input;
+}
+
+type inferMinimalProperty<Input extends z.input<(typeof allMinimalSchemas)[number]>> = Input extends z.infer<
+    typeof minimalEnumSchema
+> & { enum: readonly (infer Item)[] }
+    ? Item
+    : Input extends z.infer<typeof minimalStringSchema>
+    ? StringPropertyInput
+    : Input extends z.infer<typeof minimalBooleanSchema>
+    ? BooleanPropertyInput
+    : Input extends z.infer<typeof minimalIntegerSchema>
+    ? IntegerPropertyInput
+    : Input extends z.infer<typeof minimalArraySchema>
+    ? ArrayPropertyType<Input>
+    : never;
+
+type inferMinimalPropertyTypesSchemas<Input extends z.infer<(typeof allMinimalSchemas)[number]>> = Input extends {
+    nullable: true;
+}
+    ? inferMinimalProperty<Input> | null
+    : inferMinimalProperty<Input>;
 
 // CollapseIntersection is used to go from {...} & {...} to {...}
-export type inferInput<Input extends InputSchema> = CollapseIntersection<
+export type inferInput<Input extends MinimalInputSchema> = CollapseIntersection<
     {
-        [Key in keyof Input['properties'] & requiredKeys<Input>]: inferPropertyTypesSchemas<Input['properties'][Key]>;
+        [Key in keyof Input['properties'] &
+            (requiredKeys<Input> | DefaultedFields<Input>)]: inferMinimalPropertyTypesSchemas<Input['properties'][Key]>;
     } & {
-        [Key in Exclude<keyof Input['properties'], requiredKeys<Input>>]?: inferPropertyTypesSchemas<
-            Input['properties'][Key]
-        >;
+        [Key in Exclude<
+            keyof Input['properties'],
+            requiredKeys<Input> | DefaultedFields<Input>
+        >]?: inferMinimalPropertyTypesSchemas<Input['properties'][Key]>;
     }
 >;

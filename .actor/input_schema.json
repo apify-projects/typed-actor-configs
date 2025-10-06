@@ -11,20 +11,20 @@
         },
         "nullableProp": {
             "type": "string",
+            "nullable": true,
+            "default": "2023-02-09T01:25:37",
             "title": "some nullable prop",
             "description": "some nullable prop",
-            "nullable": true,
             "editor": "datepicker",
-            "default": "2023-02-09T01:25:37",
             "dateType": "absolute"
         },
         "booleanProp": {
             "type": "boolean",
+            "nullable": true,
+            "default": null,
             "title": "some boolean prop",
             "description": "some boolean prop",
-            "nullable": true,
-            "editor": "checkbox",
-            "default": null
+            "editor": "checkbox"
         },
         "numberProp": {
             "type": "integer",
@@ -34,20 +34,28 @@
         },
         "enumProp": {
             "type": "string",
-            "title": "some enum prop",
-            "description": "some enum prop",
             "enum": [
                 "a",
                 "b",
                 "c"
             ],
-            "nullable": true
+            "nullable": true,
+            "title": "some enum prop",
+            "description": "some enum prop"
+        },
+        "arrayProp": {
+            "type": "array",
+            "editor": "stringList",
+            "items": {
+                "type": "string"
+            },
+            "title": "some array prop",
+            "description": "some array prop"
         }
     },
     "required": [
         "booleanProp",
         "numberProp",
         "enumProp"
-    ],
-    "_hash": "967781033cb80c68016be822d4760580cc8581a1"
+    ]
 }

@@ -7,6 +7,7 @@
     "scripts": {
         "test": "vitest run",
         "run": "node example.ts",
+        "minimal": "node minimalExample.ts",
         "no-diff": "node example.ts --no-diff",
         "overwrite": "node example.ts --overwrite",
         "dry-run": "node example.ts --dry-run",

@@ -1,4 +1,5 @@
-import { defineInputConfiguration, type inferInput } from './index.ts';
+import z from 'zod';
+import { defineInputConfiguration, defineMinimalInputConfiguration, type inferInput } from './index.ts';
 
 export const input = defineInputConfiguration({
     title: 'Scrape data from a web page',
@@ -41,8 +42,16 @@ export const input = defineInputConfiguration({
             enum: ['a', 'b', 'c'] as const,
             nullable: true,
         },
+        arrayProp: {
+            type: 'array',
+            title: 'some array prop',
+            description: 'some array prop',
+            editor: 'stringList',
+            items: {
+                type: 'string',
+            },
+        },
     },
     required: ['booleanProp', 'numberProp', 'enumProp'],
 });
-
 export type Input = inferInput<typeof input>;

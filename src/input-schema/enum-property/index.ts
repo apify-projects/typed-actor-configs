@@ -1,21 +1,14 @@
 import z from 'zod';
 
-const baseEnumSchema = z.object({
-    // required
+const enumTypesSchema = z.object({
     type: z.enum(['string']),
-    title: z.string(),
-    description: z.string(),
-    enum: z.array(z.string()).min(1),
-    // optional
-    editor: z.enum(['select']).optional(),
-    prefill: z.string().optional(),
-    example: z.string().optional(),
-    nullable: z.boolean().optional(),
-    sectionCaption: z.string().optional(),
-    sectionDescription: z.string().optional(),
-    enumTitles: z.array(z.string()).optional(),
+    enum: z.array(z.string()),
 });
-
+type meme = z.infer<typeof minimalEnumSchema>;
+const lala = {
+    type: 'string',
+    enum: ['a', 'b', 'c'] as const,
+} satisfies meme;
 const nullableEnumSchema = z.object({
     nullable: z.literal(true),
     default: z.string().nullable().optional(),
@@ -25,5 +18,21 @@ const nonNullableEnumSchema = z.object({
     default: z.string().optional(),
 });
 
-export const enumPropertySchema = baseEnumSchema.and(z.union([nonNullableEnumSchema, nullableEnumSchema]));
+export const minimalEnumSchema = enumTypesSchema.and(z.union([nonNullableEnumSchema, nullableEnumSchema]));
+
+export const enumPropertySchema = minimalEnumSchema.and(
+    z.object({
+        // required
+        title: z.string(),
+        description: z.string(),
+        // optional
+        editor: z.enum(['select']).optional(),
+        prefill: z.string().optional(),
+        example: z.string().optional(),
+        sectionCaption: z.string().optional(),
+        sectionDescription: z.string().optional(),
+        enumTitles: z.array(z.string()).optional(),
+    })
+);
+
 export type EnumPropertyInput = string;
