@@ -42,22 +42,12 @@
                 "c"
             ],
             "nullable": true
-        },
-        "arrayProp": {
-            "type": "array",
-            "title": "meme",
-            "description": "meeme",
-            "editor": "stringList",
-            "items": {
-                "type": "string"
-            }
         }
     },
     "required": [
         "booleanProp",
         "numberProp",
-        "enumProp",
-        "arrayProp"
+        "enumProp"
     ],
-    "_hash": "c3399505b84ff0ff22be724da56bb7332453c67d"
+    "_hash": "967781033cb80c68016be822d4760580cc8581a1"
 }

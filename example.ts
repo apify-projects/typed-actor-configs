@@ -2,30 +2,30 @@ import { defineInputConfiguration, type inferInput } from './index.ts';
 
 export const input = defineInputConfiguration({
     title: 'Scrape data from a web page',
-    type: 'object',
     schemaVersion: 1,
+    type: 'object',
     properties: {
         meme: {
-            title: 'meeme',
             type: 'string',
+            title: 'meeme',
             description: 'Some are good, yours are bad',
             editor: 'textfield',
         },
         nullableProp: {
-            title: 'some nullable prop',
             type: 'string',
+            title: 'some nullable prop',
             description: 'some nullable prop',
-            editor: 'datepicker',
-            dateType: 'absolute',
             nullable: true,
+            editor: 'datepicker',
             default: '2023-02-09T01:25:37',
+            dateType: 'absolute',
         },
         booleanProp: {
-            title: 'some boolean prop',
             type: 'boolean',
+            title: 'some boolean prop',
             description: 'some boolean prop',
-            editor: 'checkbox',
             nullable: true,
+            editor: 'checkbox',
             default: null,
         },
         numberProp: {
@@ -41,17 +41,8 @@ export const input = defineInputConfiguration({
             enum: ['a', 'b', 'c'] as const,
             nullable: true,
         },
-        arrayProp: {
-            title: 'meme',
-            description: 'meeme',
-            type: 'array',
-            editor: 'stringList',
-            items: {
-                type: 'string',
-            },
-        },
     },
-    required: ['booleanProp', 'numberProp', 'enumProp', 'arrayProp'],
+    required: ['booleanProp', 'numberProp', 'enumProp'],
 });
 
 export type Input = inferInput<typeof input>;

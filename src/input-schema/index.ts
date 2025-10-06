@@ -10,7 +10,6 @@ import { diffConfigurations } from '../versioning/config-diff/index.ts';
 import { arrayPropertySchema, type ArrayPropertyType } from './array-property/index.ts';
 import { execArgs, initializeExecArgs } from './exec-args.ts';
 import { yellowBG } from '../text-coloring/index.ts';
-import { exit } from 'process';
 
 const propertyTypesSchemas = [
     stringPropertySchema,

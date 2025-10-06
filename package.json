@@ -1,15 +1,16 @@
 {
     "name": "typed-actor-configs",
-    "version": "0.1.1",
+    "version": "0.2.1",
     "description": "Define Apify Actor inputs and outputs in a convenient and type-safe way that does not increase bundle size",
-    "main": "index.ts",
+    "main": "dist/index.js",
     "type": "module",
     "scripts": {
         "test": "vitest run",
-        "run": "node index.ts",
-        "no-diff": "node index.ts --no-diff",
-        "overwrite": "node index.ts --overwrite",
-        "dry-run": "node index.ts --dry-run"
+        "run": "node example.ts",
+        "no-diff": "node example.ts --no-diff",
+        "overwrite": "node example.ts --overwrite",
+        "dry-run": "node example.ts --dry-run",
+        "compile": "tsc --build"
     },
     "repository": {
         "type": "git",
