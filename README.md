@@ -4,6 +4,55 @@ Create type-safe input configurations for your [Apify Actors](https://apify.com/
 
 ## How to set up
 
+There are two ways to set up your input schema:
+
+-   Minimal input schema in a TS file
+-   Whole input schema in a TS file
+
+The minimal input schema is a JSON file that contains only the properties that have repercussions on the actor's input. The whole input schema is a JSON file that contains all the properties of the input and emits a `input_schema.json` file when running the script.
+
+### Minimal input schema in a TS file
+
+This just ensures that the type of the input matches the JSON schema. It does not emit a `input_schema.json` file.
+For example, if you have an actor that takes a `string` input, you can define it like this:
+
+```typescript
+import { defineMinimalInputConfiguration, type inferInput } from 'typed-actor-configs';
+
+const minimalInput = defineMinimalInputConfiguration('.actor/input_schema.json', {
+    properties: {
+        myStringInput: {
+            type: 'string',
+        },
+    },
+});
+
+export type MinimalInput = inferInput<typeof minimalInput>;
+```
+
+Then you can use the `MinimalInput` type in your actor's main file to cast the input to the correct type.
+
+```typescript
+import { Actor } from 'apify';
+import { MinimalInput } from './input';
+
+await Actor.init();
+
+const input = (await Actor.getInput<MinimalInput>())!;
+
+// your type-safe code here
+```
+
+Then you can run this file in CI to ensure that the input_schema.json file matches the input definition in the TS file. In case of a mismatch, the script will exit with an error.
+
+This is just to ensure no drift between the input schema and the actor's input.
+
+### Whole input schema in a TS file
+
+This mode handles all the properties of the input and emits a `input_schema.json` file when running the script. This way you never have to change the `input_schema.json` file manually.
+By doing this the only source of truth is the `input.ts` file.
+In case of the `input_schema.json` file being manually changed, the script will exit with an error and print the diff between the two files.
+
 Create a standalone file for your input. Then just call `defineInputConfiguration` on the JSON you had as a `input_schema.json`.
 
 #### Example:
