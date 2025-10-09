@@ -9,7 +9,7 @@ function toHashedSchema<Schema extends ZodObject>(schema: Schema) {
 }
 
 export function hashConfigurationFile<Schema extends ZodObject>(
-    config: z.infer<Schema>,
+    config: z.input<Schema>,
     schema: Schema
 ): Hashed<z.infer<Schema>> {
     const parsedConfig = schema.parse(config);

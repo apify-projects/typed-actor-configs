@@ -23,7 +23,7 @@ const inputSchema = z.object({
     schemaVersion: z.literal(1),
     type: z.literal('object'),
     properties: z.record(z.string(), z.union(propertyTypesSchemas)),
-    required: z.array(z.string()).optional(),
+    required: z.array(z.string()).optional().default([]),
 });
 function createPathToFile(path) {
     const splitPath = path.split('/');
@@ -73,7 +73,7 @@ input
         writeSchemaFile(path, hashedInput);
         return input;
     }
-    const diff = diffConfigurations(parsedPreviousConfig.data, input);
+    const diff = diffConfigurations(parsedPreviousConfig.data, inputSchema.parse(input));
     if (diff && execArgs.noDiff()) {
         console.log('Schema differences found, but --no-diff was set, exiting');
         process.exit(1);
@@ -125,13 +125,13 @@ export function defineMinimalInputConfiguration(path, input) {
         process.exit(1);
     }
     const previousConfig = readFileSync(path, 'utf-8');
-    checkIntegrity(previousConfig, minimalInputSchema);
+    checkIntegrity(previousConfig, minimalInputSchema, true);
     const parsedPreviousConfig = minimalInputSchema.safeParse(JSON.parse(previousConfig));
     if (!parsedPreviousConfig.success) {
         console.log('Previous input schema is invalid, cannot check integrity');
         process.exit(1);
     }
-    const hasDiff = diffConfigurations(parsedPreviousConfig.data, input);
+    const hasDiff = diffConfigurations(parsedPreviousConfig.data, minimalInputSchema.parse(input));
     if (hasDiff) {
         console.log(`\n${redBG('FAILED')}: Type-critical fields dont match, check changes`);
         process.exit(1);

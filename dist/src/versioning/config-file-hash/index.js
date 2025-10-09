@@ -8,11 +8,13 @@ export function hashConfigurationFile(config, schema) {
     const parsedConfig = schema.parse(config);
     return { ...parsedConfig, _hash: hash('sha1', JSON.stringify(parsedConfig)) };
 }
-export function checkIntegrity(file, schema) {
+export function checkIntegrity(file, schema, skipHashCheck = false) {
     const jsonContents = JSON.parse(file);
     const parsedFile = toHashedSchema(schema).parse(jsonContents);
-    if (!parsedFile._hash) {
-        console.log(`${yellowBG('WARNING:')} No hash found, integrity passed.`);
+    if (!parsedFile._hash || skipHashCheck) {
+        if (!skipHashCheck) {
+            console.log(`${yellowBG('WARNING:')} No hash found, integrity passed.`);
+        }
         return 'Passed';
     }
     const { _hash, ...fileContents } = parsedFile;
