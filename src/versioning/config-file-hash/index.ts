@@ -16,11 +16,13 @@ export function hashConfigurationFile<Schema extends ZodObject>(
     return { ...parsedConfig, _hash: hash('sha1', JSON.stringify(parsedConfig)) };
 }
 
-export function checkIntegrity<Schema extends ZodObject>(file: string, schema: Schema) {
+export function checkIntegrity<Schema extends ZodObject>(file: string, schema: Schema, skipHashCheck = false) {
     const jsonContents = JSON.parse(file);
     const parsedFile = toHashedSchema(schema).parse(jsonContents);
-    if (!parsedFile._hash) {
-        console.log(`${yellowBG('WARNING:')} No hash found, integrity passed.`);
+    if (!parsedFile._hash || skipHashCheck) {
+        if (!skipHashCheck) {
+            console.log(`${yellowBG('WARNING:')} No hash found, integrity passed.`);
+        }
         return 'Passed';
     }
     const { _hash, ...fileContents } = parsedFile;

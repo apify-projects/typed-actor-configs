@@ -156,7 +156,7 @@ export function defineMinimalInputConfiguration<
     Requireds extends Properties,
     Schema extends MinimalInputSchema
 >(
-    path: `${string}/input_schema.json`,
+    path: `${string}/input_schema.json` | `${string}/INPUT_SCHEMA.json`,
     input: Schema & {
         properties: { [Key in Properties]: MinimalProperty };
         required?: Requireds[];
@@ -168,7 +168,7 @@ export function defineMinimalInputConfiguration<
         process.exit(1);
     }
     const previousConfig = readFileSync(path, 'utf-8');
-    checkIntegrity(previousConfig, minimalInputSchema);
+    checkIntegrity(previousConfig, minimalInputSchema, true);
 
     const parsedPreviousConfig = minimalInputSchema.safeParse(JSON.parse(previousConfig));
     if (!parsedPreviousConfig.success) {
