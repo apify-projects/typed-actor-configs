@@ -1,3 +1,4 @@
 import { defineInputConfiguration, defineMinimalInputConfiguration, type inferInput } from './src/input-schema/index.ts';
-export { defineInputConfiguration, defineMinimalInputConfiguration, type inferInput };
+import { InferDataset, myDatasetFields } from './src/dataset-schema/index.ts';
+export { type inferInput, defineInputConfiguration, defineMinimalInputConfiguration, type InferDataset, myDatasetFields, };
 //# sourceMappingURL=index.d.ts.map

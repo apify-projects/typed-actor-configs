@@ -3,4 +3,15 @@ import {
     defineMinimalInputConfiguration,
     type inferInput,
 } from './src/input-schema/index.ts';
-export { defineInputConfiguration, defineMinimalInputConfiguration, type inferInput };
+
+import { InferDataset, myDatasetFields } from './src/dataset-schema/index.ts';
+
+export {
+    // zod based input schemas
+    type inferInput,
+    defineInputConfiguration,
+    defineMinimalInputConfiguration,
+    // json schema based dataset schemas
+    type InferDataset,
+    myDatasetFields,
+};

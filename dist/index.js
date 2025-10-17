@@ -1,3 +1,4 @@
 import { defineInputConfiguration, defineMinimalInputConfiguration, } from "./src/input-schema/index.js";
-export { defineInputConfiguration, defineMinimalInputConfiguration };
+import { myDatasetFields } from "./src/dataset-schema/index.js";
+export { defineInputConfiguration, defineMinimalInputConfiguration, myDatasetFields, };
 //# sourceMappingURL=index.js.map
