@@ -1,146 +1,240 @@
-const input_schema = {
-    $id: 'https://apify.com/schemas/v1/input.json',
-    title: 'JSON schema of Apify Actor input',
-    type: 'object',
-    properties: {
-        $schema: {
-            type: 'string',
-        },
-        title: {
-            type: 'string',
-        },
-        schemaVersion: {
-            type: 'integer',
-            minimum: 1,
-            maximum: 1,
-        },
-        description: {
-            type: 'string',
-        },
-        type: {
-            enum: ['object'],
-        },
-        required: {
-            type: 'array',
-            minItems: 0,
-            items: { type: 'string' },
-            uniqueItems: true,
-        },
-        additionalProperties: {
-            type: 'boolean',
-        },
-        properties: {
-            type: 'object',
-            patternProperties: {
-                '^': {
-                    type: 'string',
-                    // oneOf: [
-                    //     { $ref: stringEnumProperty.schema.$id },
-                    //     { $ref: stringProperty.schema.$id },
-                    //     { $ref: integerProperty.schema.$id },
-                    //     { $ref: numberProperty.schema.$id },
-                    //     { $ref: booleanProperty.schema.$id },
-                    //     { $ref: resourceProperty.schema.$id },
-                    //     { $ref: resourceArrayProperty.schema.$id },
-                    //     { $ref: objectProperty.schema.$id },
-                    //     // { $ref: arrayProperty.schema.$id },
-                    // ],
-                },
-            },
-        },
-    },
-    additionalProperties: false,
-    required: ['title', 'type', 'properties', 'schemaVersion'],
-};
+import { existsSync, readFileSync, writeFileSync } from 'fs';
+import { diffConfigurations } from "../versioning/config-diff/index.js";
+import { greenBG, yellowBG } from "../text-coloring/index.js";
 const testInputSchema = {
+    title: 'Input schema for the youtube-search-scraper actor',
+    description: "Scrape YouTube search results using a search term, or directly input a video, channel, or results page URL. Feel free to try it out with our default settings by hitting &#9655;<b> Start</b>. If you need any help, have a read through <a href='https://blog.apify.com/how-to-scrape-youtube/' target='_blank' rel='noopener'>this tutorial</a>.",
     type: 'object',
-    title: 'Test input schema',
     schemaVersion: 1,
-    description: 'This is a test input schema',
     properties: {
-        enumProperty: {
-            type: 'string',
-            title: 'Enum property',
-            description: 'This is an enum property',
-            editor: 'select',
-            enum: ['a', 'b', 'c'],
-        },
-        anotherEnumProperty: {
-            type: 'string',
-            title: 'Another enum property',
-            description: 'This is another enum property',
-            editor: 'select',
-            enum: ['d', 'e', 'f'],
-        },
-        stringProperty: {
-            type: 'string',
-            title: 'String property',
-            description: 'This is a string property',
-            editor: 'textfield',
-        },
-        integerProperty: {
-            type: 'integer',
-            title: 'Integer property',
-            description: 'This is an integer property',
-            editor: 'number',
-        },
-        numberProperty: {
-            type: 'number',
-            title: 'Number property',
-            description: 'This is a number property',
-            editor: 'number',
-        },
-        booleanProperty: {
-            type: 'boolean',
-            title: 'Boolean property',
-            description: 'This is a boolean property',
-            editor: 'checkbox',
-        },
-        resourceProperty: {
-            type: 'string',
-            title: 'Resource property',
-            description: 'This is a resource property',
-            editor: 'resourcePicker',
-            resourceType: 'dataset',
-            resourcePermissions: ['READ', 'WRITE'],
-        },
-        resourceArrayProperty: {
+        searchQueries: {
+            title: 'Search terms',
             type: 'array',
-            title: 'Resource array property',
-            description: 'This is a resource array property',
-            editor: 'resourcePicker',
-            resourceType: 'dataset',
-            resourcePermissions: ['READ', 'WRITE'],
+            editor: 'stringList',
+            description: "Enter search terms just like you would enter it in YouTube's search bar.",
+            prefill: ['Crawlee'],
+            nullable: false,
         },
-        objectProperty: {
-            type: 'object',
-            title: 'Object property',
-            description: 'This is an object property',
-            editor: 'json',
-            properties: {
-                meme: {
-                    type: 'string',
-                    title: 'Meme',
-                    description: 'This is a meme',
-                    editor: 'select',
-                    enum: ['a', 'b', 'c'],
-                },
-                requiredProp: {
-                    type: 'string',
-                    title: 'Required prop',
-                    description: 'This is a required prop',
-                    editor: 'textfield',
-                },
-                nullableProp: {
-                    type: 'integer',
-                    title: 'Defaulted prop',
-                    description: 'This is a defaulted prop',
-                    nullable: true,
-                },
-            },
-            required: ['requiredProp', 'nullableProp'],
+        maxResults: {
+            title: 'Maximum videos per search term',
+            type: 'integer',
+            description: 'Limit the number of videos you want to crawl. If you scrape a channel, acts as a limit for regular videos.',
+            minimum: 0,
+            default: 0,
+            maximum: 999999,
+            prefill: 10,
+            unit: 'Videos',
+        },
+        maxResultsShorts: {
+            title: 'Maximum shorts per search term',
+            type: 'integer',
+            description: 'Limit the number of Shorts videos you want to crawl.',
+            minimum: 0,
+            maximum: 999999,
+            default: 0,
+            prefill: 0,
+            unit: 'Videos',
+        },
+        maxResultStreams: {
+            title: 'Maximum streams per search term',
+            type: 'integer',
+            description: 'Limit the number of Stream videos you want to crawl.',
+            minimum: 0,
+            maximum: 999999,
+            default: 0,
+            prefill: 0,
+            unit: 'Videos',
+        },
+        startUrls: {
+            title: 'Direct URLs',
+            type: 'array',
+            description: "Enter a link to a <a href='https://www.youtube.com/watch?v=xObhZ0Ga7EQ' target='_blank' rel='noopener'>YouTube video</a>, <a href='https://www.youtube.com/c/Apify' target='_blank' rel='noopener'>channel</a>, <a href='https://www.youtube.com/playlist?list=PLObrtcm1Kw6PmbXg8bmfJN-o2Hgx8sidf' target='_blank' rel='noopener'>playlist</a>, <a href='https://www.youtube.com/hashtag/apify' target='_blank' rel='noopener'>hashtag</a> or <a href='https://www.youtube.com/results?search_query=crawlee' target='_blank' rel='noopener'>search results page</a>. You can also import a CSV file or Google Sheet with a list of URLs.<br><b>Note:</b> Input from <i>Search term</i> will be ignored when using this option. If you only want to scrape shorts/streams, set Maximum search results to 0, otherwise they represented number of regular videos requested",
+            default: [],
+            editor: 'requestListSources',
+            sectionCaption: '🔗 Direct URLs',
+        },
+        downloadSubtitles: {
+            title: 'Download subtitles',
+            type: 'boolean',
+            description: 'If set to true, the scraper will download subtitles for the video and convert them to .srt format.',
+            sectionCaption: '🖹 Download YouTube transcript',
+        },
+        saveSubsToKVS: {
+            title: 'Save subtitles to key-value store',
+            type: 'boolean',
+            description: 'If set to true, the scraper will save the downloaded subtitles to the key-value store. <br><b>Note:</b> <i>Download subtitles</i> must be turned on for this option to work.',
+        },
+        subtitlesLanguage: {
+            title: 'Subtitle language',
+            type: 'string',
+            description: 'Language to download subtitles in.<br><b>Note:</b> <i>Download subtitles</i> must be turned on for this option to work.',
+            editor: 'select',
+            default: 'en',
+            enum: ['any', 'en', 'de', 'es', 'fr', 'it', 'ja', 'ko', 'nl', 'pt', 'ru'],
+            enumTitles: [
+                'Any',
+                'English',
+                'German',
+                'Spanish',
+                'French',
+                'Italian',
+                'Japanese',
+                'Korean',
+                'Holland',
+                'Portuguese',
+                'Russian',
+            ],
+        },
+        preferAutoGeneratedSubtitles: {
+            title: 'Prefer automatically generated subtitles.',
+            description: 'If set to true, automatically generated subtitles are preferred to user subtitles.<b>Note:</b> A subtitle language must be selected for this option to work.',
+            type: 'boolean',
+        },
+        subtitlesFormat: {
+            title: 'Subtitle format',
+            type: 'string',
+            description: 'Select in what format you want to download subtitles',
+            editor: 'select',
+            default: 'srt',
+            enum: ['srt', 'vtt', 'xml', 'plaintext'],
+            enumTitles: ['SRT', 'WEBVTT', 'XML', 'plaintext'],
+        },
+        sortingOrder: {
+            title: 'Sorting order',
+            type: 'string',
+            description: 'Select Youtube sorting parameter for search',
+            sectionCaption: '✅ Add filters',
+            sectionDescription: "Specify the parameters you want to sort/filter videos by. They will be applied as if you manually did so on Youtube's search page. Only works if you provide search term, not for the direct URLs.\n \n ⚠️ Using YouTube filters may mix Shorts with regular videos. This is a limitation on YouTube's side. We recommend checking it manually.",
+            editor: 'select',
+            enum: ['relevance', 'rating', 'date', 'views'],
+            enumTitles: ['Relevance', 'Rating', 'Upload date', 'View count'],
+            nullable: true,
+        },
+        dateFilter: {
+            title: 'Date filter',
+            type: 'string',
+            description: 'Select Youtube upload date filter for search',
+            editor: 'select',
+            enum: ['hour', 'today', 'week', 'month', 'year'],
+            enumTitles: ['Last hour', 'Today', 'This week', 'This month', 'This year'],
+            nullable: true,
+        },
+        videoType: {
+            title: 'Video type filter',
+            type: 'string',
+            description: 'Select Youtube video type filter for search',
+            editor: 'select',
+            enum: ['video', 'movie'],
+            enumTitles: ['Video', 'Film'],
+            nullable: true,
+        },
+        lengthFilter: {
+            title: 'Length filter',
+            type: 'string',
+            description: 'Select Youtube video length filter for search',
+            editor: 'select',
+            enum: ['under4', 'between420', 'plus20'],
+            enumTitles: ['Under 4 minutes', '4-20 minutes', 'Over 20 minutes'],
+            nullable: true,
+        },
+        isHD: {
+            title: 'HD',
+            type: 'boolean',
+            description: 'Will apply the HD filter for search',
+            editor: 'checkbox',
+            groupCaption: 'Features',
+            groupDescription: 'What you could select under the Features section of the Filtering&Sorting menu on Youtube',
+            nullable: true,
+        },
+        hasSubtitles: {
+            title: 'Subtitles/CC',
+            type: 'boolean',
+            description: 'Will apply the Subtitles/CC filter for search',
+            editor: 'checkbox',
+            nullable: true,
+        },
+        hasCC: {
+            title: 'Creative Commons',
+            type: 'boolean',
+            description: 'Will apply the Creative Commons filter for search',
+            editor: 'checkbox',
+            nullable: true,
+        },
+        is3D: {
+            title: '3D',
+            type: 'boolean',
+            description: 'Will apply the 3D filter for search',
+            editor: 'checkbox',
+            nullable: true,
+        },
+        isLive: {
+            title: 'Live',
+            type: 'boolean',
+            description: 'Will apply the Live filter for search',
+            editor: 'checkbox',
+            nullable: true,
+        },
+        isBought: {
+            title: 'Purchased',
+            type: 'boolean',
+            description: 'Will apply the Purchased filter for search',
+            editor: 'checkbox',
+            nullable: true,
+        },
+        is4K: {
+            title: '4K',
+            type: 'boolean',
+            description: 'Will apply the 4K filter for search',
+            editor: 'checkbox',
+            nullable: true,
+        },
+        is360: {
+            title: '360 degrees',
+            type: 'boolean',
+            description: 'Will apply the 360 degrees filter for search',
+            editor: 'checkbox',
+            nullable: true,
+        },
+        hasLocation: {
+            title: 'Location',
+            type: 'boolean',
+            description: 'Will apply the Location filter for search',
+            editor: 'checkbox',
+            nullable: true,
+        },
+        isHDR: {
+            title: 'HDR',
+            type: 'boolean',
+            description: 'Will apply the HDR filter for search',
+            editor: 'checkbox',
+            nullable: true,
+        },
+        isVR180: {
+            title: 'VR180',
+            type: 'boolean',
+            description: 'Will apply the VR180 filter for search',
+            editor: 'checkbox',
+            nullable: true,
+        },
+        oldestPostDate: {
+            title: 'Scrape videos published after [date]',
+            type: 'string',
+            editor: 'datepicker',
+            dateType: 'absoluteOrRelative',
+            pattern: '^(\\d{4})-(0[1-9]|1[0-2])-(0[1-9]|[12]\\d|3[01])(T[0-2]\\d:[0-5]\\d(:[0-5]\\d)?(\\.\\d+)?Z?)?$|^(\\d+)\\s*(minute|hour|day|week|month|year)s?$',
+            description: "Only posts uploaded after or on this date will be scraped. Alternatively, specify how old the scraped videos should be in days. Putting <code>1 day</code> will get you only today's posts, <code>2 days</code> - yesterday's and today's, and so on. Note, that if you select this, sorting parameter will be auto-reset to NEWEST",
+            sectionCaption: '📅 Date range (applicable only to scraping by channels URL)',
+        },
+        sortVideosBy: {
+            title: 'Sort by',
+            type: 'string',
+            editor: 'select',
+            enum: ['NEWEST', 'POPULAR', 'OLDEST'],
+            description: "Maps to the sorting buttons on the top of the channel's 'Videos', 'Shorts' and 'Live' pages.",
+            enumTitles: ['Newest', 'Popular', 'Oldest'],
         },
     },
+    required: [],
 };
 const testInputSchema2 = {
     title: 'Input schema for the youtube-search-scraper actor',
@@ -210,5 +304,20 @@ const testInputSchema2 = {
     },
     required: ['startUrls'],
 };
-export {};
+export function defineActorInput(path, inputSchema) {
+    const configExists = existsSync(path);
+    if (!configExists) {
+        console.log('No input schema found, nothing to check integrity against');
+        process.exit(1);
+    }
+    const previousConfig = JSON.parse(readFileSync(path, 'utf-8'));
+    const diff = diffConfigurations(previousConfig, inputSchema);
+    if (diff) {
+        console.log(`\n${yellowBG('MODIFIED')}: Type-critical fields dont match, check changes`);
+        writeFileSync(path, JSON.stringify(inputSchema, null, 4));
+        process.exit(1);
+    }
+    console.log(`\n${greenBG('PASSED')}: No differences found on type-critical fields`);
+    return inputSchema;
+}
 //# sourceMappingURL=index.js.map

@@ -6,6 +6,8 @@ import {
 
 import { InferDataset, myDatasetFields } from './src/dataset-schema/index.ts';
 
+import { defineActorInput, type InferInput } from './src/new-input-schema/index.ts';
+
 export {
     // zod based input schemas
     type inferInput,
@@ -14,4 +16,7 @@ export {
     // json schema based dataset schemas
     type InferDataset,
     myDatasetFields,
+    // new input schema
+    defineActorInput,
+    type InferInput,
 };

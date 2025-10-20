@@ -271,7 +271,7 @@ export type ArrayProperty = FromSchema<typeof arrayProperty, {
 type Editor<T extends string> = {
     editor: T;
 };
-export type InferArrayPropertyByEditor<T extends ArrayProperty> = T extends Editor<'select'> ? InferArrayItemsSelect<T['items']> : T extends Editor<'keyValue'> ? InferArrayItemsKeyValue<T['items']> : T extends Editor<'fileupload'> ? string : T extends Editor<'stringList'> ? string : T extends Editor<'globs'> ? InferArrayItemsGlobs<T['items']> : T extends Editor<'pseudoUrls'> ? InferArrayItemsPseudoUrls<T['items']> : T extends Editor<'requestListSources'> ? InferArrayItemsRequestListSources<T['items']> : T extends Editor<'json'> ? InferArrayItems<T['items']> : T extends Editor<'schemaBased'> ? InferArrayItems<T['items']> : T extends Editor<'hidden'> ? InferArrayItems<T['items']> : never;
+export type InferArrayPropertyByEditor<T extends ArrayProperty> = T extends Editor<'select'> ? InferArrayItemsSelect<T['items']>[] : T extends Editor<'keyValue'> ? InferArrayItemsKeyValue<T['items']>[] : T extends Editor<'fileupload'> ? string[] : T extends Editor<'stringList'> ? string[] : T extends Editor<'globs'> ? InferArrayItemsGlobs<T['items']>[] : T extends Editor<'pseudoUrls'> ? InferArrayItemsPseudoUrls<T['items']>[] : T extends Editor<'requestListSources'> ? InferArrayItemsRequestListSources<T['items']>[] : T extends Editor<'json'> ? InferArrayItems<T['items']>[] : T extends Editor<'schemaBased'> ? InferArrayItems<T['items']>[] : T extends Editor<'hidden'> ? InferArrayItems<T['items']>[] : never;
 export type InferArrayProperty<T extends ArrayProperty> = InferArrayPropertyByEditor<T>;
 declare const _default: {
     schema: {

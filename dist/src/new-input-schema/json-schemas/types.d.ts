@@ -42,4 +42,7 @@ export type DeepWriteable<T> = {
 export type DeepReadonly<T> = {
     readonly [P in keyof T]: DeepReadonly<T[P]>;
 };
+export type TrimTitleAndDescription<T, U = Omit<T, 'title' | 'description'>> = T extends object ? Resolve<{
+    [K in keyof U]: TrimTitleAndDescription<U[K]>;
+}> : T;
 //# sourceMappingURL=types.d.ts.map
