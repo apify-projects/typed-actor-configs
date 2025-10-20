@@ -7,7 +7,7 @@ type consistentRequired<T extends JSONSchema> = T extends { properties: Record<i
     ? T & { required?: R[] }
     : never;
 
-function myDataset<
+function defineDataset<
     PassthroughType extends Dataset,
     Fields extends JSONSchema,
     Properties extends string | never,
@@ -24,7 +24,7 @@ function myDataset<
     console.log(path);
     return input;
 }
-export function myDatasetFields<
+export function checkDatasetFields<
     PassthroughType extends Dataset['fields'],
     Fields extends JSONSchema,
     Properties extends string | never,
@@ -45,37 +45,6 @@ export function myDatasetFields<
     console.log(`\n${greenBG('PASSED')}: No differences found on type-critical fields`);
     return input;
 }
-
-// const mmemememe = myDataset('/path/to/dataset.json', {
-//     actorSpecification: 1,
-//     title: 'My Dataset',
-//     description: 'This is my dataset',
-//     fields: {
-//         type: 'object',
-//         properties: {
-//             url: {
-//                 type: 'string',
-//             },
-//             title: {
-//                 type: 'string',
-//                 default: "I'm a title",
-//             },
-//             something: {
-//                 type: 'object',
-//                 properties: {
-//                     memardo: {
-//                         type: 'string',
-//                         default: 'meme',
-//                     },
-//                 },
-//                 additionalProperties: false,
-//             },
-//         },
-//         additionalProperties: false,
-//         required: ['url'],
-//     },
-//     randomField: 'random',
-// } as const);
 
 export type InferDataset<T extends { fields?: JSONSchema }> = T extends {
     fields: infer Fields extends JSONSchema;

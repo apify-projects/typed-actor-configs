@@ -1,97 +1,185 @@
 # Typed Actor Configs
 
-Create type-safe input configurations for your [Apify Actors](https://apify.com/)
+Create type-safe input and output configurations for your [Apify Actors](https://apify.com/)
 
-## How to set up
+## Installation
 
-There are two ways to set up your input schema:
+```bash
+npm install typed-actor-configs
+```
 
--   Minimal input schema in a TS file
--   Whole input schema in a TS file
+## How it works
 
-The minimal input schema is a JSON file that contains only the properties that have repercussions on the actor's input. The whole input schema is a JSON file that contains all the properties of the input and emits a `input_schema.json` file when running the script.
+The `typed-actor-configs` package provides two main functionalities:
 
-### Minimal input schema in a TS file
+1. Inferrence of types from schemas
+2. Generation and validation of schemas
 
-This just ensures that the type of the input matches the JSON schema. It does not emit a `input_schema.json` file.
-For example, if you have an actor that takes a `string` input, you can define it like this:
+The basic usage is to define your schemas and export the inferred types. Then for validation you can run the file directly and it will check differences between the current schema and the new one.
+
+```bash
+node ./path/to/input_schema.ts
+bun run ./path/to/input_schema.ts
+node ./path/to/input_schema.ts --dry-run
+...
+```
+
+Alternatively, you can add them as a script to your `package.json` file:
+
+```json
+{
+    "scripts": {
+        "generate-input-schema": "node ./path/to/input_schema.ts"
+    }
+}
+```
+
+This works due to the only export of the file being the inferred type.
+If you import any const from the file it will be run whenever you start your actor.
+**MAKE SURE TO ONLY EXPORT INFERRED TYPES**
+
+## Schemas
+
+Schemas can be used in two ways:
+
+#### 1. Validate schema in a TS file and infer types from it
+
+In this mode, you define your full schema in a JSON file and then copy just the type-relevant fields to the TS file. Then whenever you want to change the schema, you only need to update the JSON file if it is a field that is not type-relevant. Type-relevant fields have to be updated in both files. A field is type-relevant if it would change the type of the inferred type. For example `required`, `additionalProperties` or `properties` would be type-relevant.
+
+You can then set up a CI pipeline that runs the validation whenever you push to a PR to ensure that the schema and types are always in sync.
+
+#### 2. Generate a full schema, validate it and infer types from it
+
+In this mode, you define your full schema in the TS file and then it generates the JSON file (with the exact same content) upon running the file.
+
+Whenever you change the schema, you only need to update the TS file. The JSON file will be regenerated automatically and all changes will be shown in the diff.
+
+The first one just ensures that the fields passed to it match the JSON schema. It does not emit a `input_schema.json` or `dataset_schema.json` file.
+
+#### Why are two files needed?
+
+Since [we cant import a JSON file with narrowed types](https://github.com/microsoft/TypeScript/issues/32063) (`as const`), we still need to have the `as const` type-relevant fields available to typescript in order to infer the types.
+
+### Dataset Schema
+
+The dataset schema defines the fields of your dataset. Use its inferred type whenever you want to push data to your dataset.
+You can pass it as a generic to `pushData` as in `pushData<DataSetItem>(someItem)`.
+
+The documentation for the dataset schema can be found [here](https://docs.apify.com/platform/actors/development/actor-definition/dataset-schema).
+
+For example, you can define it like this. Note that the fields definition is JSON schema compliant.
 
 ```typescript
-import { defineMinimalInputConfiguration, type inferInput } from 'typed-actor-configs';
+import { checkDatasetFields, type InferDataset } from 'typed-actor-configs';
+import MyDataset from './dataset.json' with { type: 'json' };
 
-const minimalInput = defineMinimalInputConfiguration('.actor/input_schema.json', {
-    properties: {
-        myStringInput: {
-            type: 'string',
+const dataset = checkDatasetFields(MyDataset, {
+    actorSpecification: 1,
+    title: 'My Dataset',
+    description: 'This is my dataset',
+    fields: {
+        type: 'object',
+        properties: {
+            url: {
+                type: 'string',
+            },
+            title: {
+                type: 'string',
+                default: "I'm a title",
+            },
         },
+        additionalProperties: false,
+        required: ['url'],
     },
-});
+} as const)
 
-export type MinimalInput = inferInput<typeof minimalInput>;
+export type DatasetItem = InferDataset<typeof dataset>;
+// type DatasetItem = {
+//     url: string;
+//     title?: string | undefined;
+// }
 ```
 
-Then you can use the `MinimalInput` type in your actor's main file to cast the input to the correct type.
+Note that the type of `title` is `string | undefined` even though it has a default value. This is because you want to be able to use `pushData<DataSetItem>` without having to specify the `title` field.
+On the other hand, the type of `url` is `string` because it is required.
+
+On input schemas this behavior is different. Since its an input all fields are considered already defaulted.
+
+Additionally, since `checkDatasetFields` does not emit a `dataset_schema.json` file, you can just import your dataset json file and pass it to `checkDatasetFields` directly for validation.
+
+After everything is defined, you can just import the `DatasetItem` type and use it as a type for your dataset.
 
 ```typescript
+import { DatasetItem } from './dataset.ts';
 import { Actor } from 'apify';
-import { MinimalInput } from './input';
 
-await Actor.init();
+const item = {
+    url: 'https://www.example.com',
+};
 
-const input = (await Actor.getInput<MinimalInput>())!;
+await Actor.pushData<DatasetItem>(item); // All good
 
-// your type-safe code here
+const wrongItem = { foo: 'bar' };
+await Actor.pushData<DatasetItem>(wrongItem); // Type error since url is a required field
 ```
 
-Then you can run this file in CI to ensure that the input_schema.json file matches the input definition in the TS file. In case of a mismatch, the script will exit with an error.
+**Note:** Dataset schemas currently do not support the "generate full schema" mode. This is to be implemented in the future.
 
-This is just to ensure no drift between the input schema and the actor's input.
+### Input Schema
 
-### Whole input schema in a TS file
+The input schema defines the fields of your input. Use its inferred type whenever you want to get input from the user.
+You can pass it as a generic to `getInput` as in `(await getInput<InputItem>())!`.
 
-This mode handles all the properties of the input and emits a `input_schema.json` file when running the script. This way you never have to change the `input_schema.json` file manually.
-By doing this the only source of truth is the `input.ts` file.
-In case of the `input_schema.json` file being manually changed, the script will exit with an error and print the diff between the two files.
+The documentation for the input schema can be found [here](https://docs.apify.com/platform/actors/development/actor-definition/input-schema).
 
-Create a standalone file for your input. Then just call `defineInputConfiguration` on the JSON you had as a `input_schema.json`.
+For the input schema you can use the generation mode as shown below.
 
-#### Example:
+```typescript
+import { defineActorInput, type InferInput } from 'typed-actor-configs';
 
-```javascript
-import { defineInputConfiguration, inferInput } from 'typed-actor-configs';
-
-const input = defineInputConfiguration({
-    type: 'object',
+const input = defineActorInput('.actor/input_schema.json', {
+    title: 'Scrape data from a web page',
     schemaVersion: 1,
-    title: 'My type safe Apify Actor',
-    Description: 'a funny yet informative description',
+    type: 'object',
     properties: {
-        someStringInput: {
-            title: 'String Input Field',
-            description: 'write your strings here',
-            type: 'string',
-            editor: 'textarea',
-            prefill: 'some text',
-        },
-        someNumberInput: {
-            title: 'Number Input Field',
-            description: 'write your numbers here',
+        numberProp: {
             type: 'integer',
+            title: 'some number prop',
+            description: 'some number prop',
             editor: 'number',
-            prefill: 10,
             nullable: true,
         },
+        enumProp: {
+            type: 'string',
+            title: 'some enum prop',
+            description: 'some enum prop',
+            enum: ['a', 'b', 'c'] as const,
+            default: 'a',
+        },
+        arrayProp: {
+            type: 'array',
+            title: 'some array prop',
+            description: 'some array prop',
+            editor: 'stringList',
+            items: {
+                type: 'string',
+            },
+        },
     },
-    required: ['someStringInput'],
-});
+    required: ['numberProp'],
+} as const);
 
-// { someStringInput: string, someNumberInput?: number | null | undefined }
-export type ActorInput = inferInput<typeof input>;
+export type ActorInput = InferInput<typeof input>;
+// type ActorInput = {
+//     numberProp: number | null; // present since it is required, but can be null due to the nullable property
+//     enumProp: 'a' | 'b' | 'c'; // always present since it has a default value
+//     arrayProp?: string[] | undefined;
+// }
 ```
 
-From your actor main file now you can import the `ActorInput` type and use it as a type for your input.
+Then you can use the `ActorInput` type in your actor's main file to cast the input to the correct type.
 
-```javascript
+```typescript
 import { Actor } from 'apify';
 import { ActorInput } from './input';
 
@@ -102,41 +190,13 @@ const input = (await Actor.getInput<ActorInput>())!;
 // your type-safe code here
 ```
 
-**Note:** As long as the **only export** of the file is the inferred type, your build size will not increase and the input_schema.json file will not be generated when running your actor (either locally or on Apify Cloud).
+**Note:** As long as the **only export** of the file is the inferred type, your build size will not increase and the `input_schema.json` file will not be generated when running your actor (either locally or on Apify Cloud).
 
-## How to run
+Then you can just modify and run the file to generate the `input_schema.json` file.
 
-Now that we have our input configuration, we can run the file to generate the `input_schema.json` file.
+You can also create a CI pipeline that runs the file on `--no-diff` mode whenever you push to a PR to ensure that the schema and types are always in sync. Ensuring that whenever you change the schema, you have to run the generation mode to update the `input_schema.json` file.
 
-```bash
-node ./path/to/input.ts
-```
-
-or add it to your `package.json` scripts:
-
-```json
-{
-    "scripts": {
-        "generate-input-schema": "node ./path/to/input.ts"
-    }
-}
-```
-
-then run `npm run generate-input-schema` to generate the `input_schema.json` file.
-
-Checking the file you will see that it has been generated with the same structure as it was defined in the `input.ts` file. It also has a `_hash` property thats used as a checksum to make sure that the file hasn't been changed manually.
-
-### Behavior
-
-Will check the existance of the `input_schema.json` file and will compare it with the current one. It will show you the diff between the two files and and then update the file if the old file was NOT modified manually (its checksum matches its content). If the old file was modified manually, it will not update the file and will exit with an error.
-
-#### Flags
-
-You can also pass flags to the script to change its behavior:
-
--   `--dry-run`: will not write anything and will just show you the diff between the current `input_schema.json` and the new one.
--   `--overwrite`: will overwrite the `input_schema.json` file with the new one even if the old one does not match its checksum. Make sure to have resolved any conflicts before running this.
--   `--no-diff`: will check that the `input_schema.json` file matches the current one, exiting with an error if it does not. This is useful for CI pipelines on pull requests, ensuring that the file is up to date before merging.
+**Note:** Input schemas currently do not support the "validate schema in a TS file and infer types from it" mode. This is to be implemented in the future.
 
 ## Missing features
 
@@ -144,18 +204,8 @@ Not all input types are supported yet.
 
 Currently the following types are supported:
 
--   string
--   boolean
--   integer
--   enum
--   array (only of strings)
-
-Missing types:
-
--   Array (all other types)
--   object
--   resource
--   resourceArray
+-   nested objects
+-   nested arrays
 
 Check the [issues](https://github.com/apify-projects/typed-actor-configs/issues) for more details on known bugs and missing features.
 

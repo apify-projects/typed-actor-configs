@@ -11,6 +11,7 @@ import { arrayPropertySchema, minimalArraySchema, type ArrayPropertyType } from 
 import { execArgs, initializeExecArgs } from './exec-args.ts';
 import { greenBG, redBG, yellowBG } from '../text-coloring/index.ts';
 import { type DefaultedFields } from '../utility-types/nullability.ts';
+import { createPathToFile } from '../filesystem.ts';
 
 const propertyTypesSchemas = [
     stringPropertySchema,
@@ -38,16 +39,6 @@ type InputSchema = z.input<typeof inputSchema>;
 type consistentRequired<T extends InputSchema> = T extends { properties: Record<infer R, any> }
     ? T & { required?: R[] }
     : never;
-
-function createPathToFile(path: string) {
-    const splitPath = path.split('/');
-    for (let i = 0; i < splitPath.length - 1; i++) {
-        const folder = splitPath.slice(0, i + 1).join('/');
-        if (!existsSync(folder)) {
-            mkdirSync(folder, { recursive: true });
-        }
-    }
-}
 
 function writeSchemaFile(path: string, content: Hashed<InputSchema>) {
     const { _hash, ...rest } = content;

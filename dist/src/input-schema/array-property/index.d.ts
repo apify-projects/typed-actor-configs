@@ -39,15 +39,15 @@ export declare const arrayPropertySchema: z.ZodIntersection<z.ZodIntersection<z.
     title: z.ZodString;
     description: z.ZodString;
     editor: z.ZodEnum<{
-        stringList: "stringList";
+        select: "select";
+        hidden: "hidden";
         json: "json";
+        schemaBased: "schemaBased";
         requestListSources: "requestListSources";
         pseudoUrls: "pseudoUrls";
         globs: "globs";
         keyValue: "keyValue";
-        select: "select";
-        schemaBased: "schemaBased";
-        hidden: "hidden";
+        stringList: "stringList";
     }>;
     isSecret: z.ZodOptional<z.ZodBoolean>;
     prefill: z.ZodOptional<z.ZodArray<z.ZodAny>>;

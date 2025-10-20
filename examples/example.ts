@@ -1,7 +1,6 @@
-import z from 'zod';
-import { defineInputConfiguration, defineMinimalInputConfiguration, type inferInput } from './index.ts';
+import { defineActorInput, InferInput } from '../index.ts';
 
-export const input = defineInputConfiguration('.actor/input_schema.json', {
+export const input = defineActorInput('.actor/input_schema.json', {
     title: 'Scrape data from a web page',
     schemaVersion: 1,
     type: 'object',
@@ -53,5 +52,6 @@ export const input = defineInputConfiguration('.actor/input_schema.json', {
         },
     },
     required: ['booleanProp', 'numberProp', 'enumProp'],
-});
-export type Input = inferInput<typeof input>;
+} as const);
+
+export type Input = InferInput<typeof input>;

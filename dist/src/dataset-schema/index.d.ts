@@ -5,7 +5,7 @@ type consistentRequired<T extends JSONSchema> = T extends {
 } ? T & {
     required?: R[];
 } : never;
-export declare function myDatasetFields<PassthroughType extends Dataset['fields'], Fields extends JSONSchema, Properties extends string | never, Requireds extends Properties>(config: {
+export declare function checkDatasetFields<PassthroughType extends Dataset['fields'], Fields extends JSONSchema, Properties extends string | never, Requireds extends Properties>(config: {
     fields: object;
 }, input: PassthroughType & {
     fields: consistentRequired<Fields & {

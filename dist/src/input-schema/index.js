@@ -3,12 +3,13 @@ import { minimalStringSchema, stringPropertySchema } from "./string-property/ind
 import { booleanPropertySchema, minimalBooleanSchema } from "./boolean-property/index.js";
 import { integerPropertySchema, minimalIntegerSchema } from "./integer-property/index.js";
 import { enumPropertySchema, minimalEnumSchema } from "./enum-property/index.js";
-import { writeFileSync, readFileSync, existsSync, mkdirSync } from 'fs';
+import { writeFileSync, readFileSync, existsSync } from 'fs';
 import { checkIntegrity, hashConfigurationFile } from "../versioning/config-file-hash/index.js";
 import { diffConfigurations } from "../versioning/config-diff/index.js";
 import { arrayPropertySchema, minimalArraySchema } from "./array-property/index.js";
 import { execArgs, initializeExecArgs } from "./exec-args.js";
 import { greenBG, redBG, yellowBG } from "../text-coloring/index.js";
+import { createPathToFile } from "../filesystem.js";
 const propertyTypesSchemas = [
     stringPropertySchema,
     booleanPropertySchema,
@@ -25,15 +26,6 @@ const inputSchema = z.object({
     properties: z.record(z.string(), z.union(propertyTypesSchemas)),
     required: z.array(z.string()).optional().default([]),
 });
-function createPathToFile(path) {
-    const splitPath = path.split('/');
-    for (let i = 0; i < splitPath.length - 1; i++) {
-        const folder = splitPath.slice(0, i + 1).join('/');
-        if (!existsSync(folder)) {
-            mkdirSync(folder, { recursive: true });
-        }
-    }
-}
 function writeSchemaFile(path, content) {
     const { _hash, ...rest } = content;
     writeFileSync(path, JSON.stringify(rest, null, 4));

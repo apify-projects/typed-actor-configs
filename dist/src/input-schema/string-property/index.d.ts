@@ -26,9 +26,9 @@ export declare const stringPropertySchema: z.ZodIntersection<z.ZodIntersection<z
     title: z.ZodString;
     description: z.ZodString;
     editor: z.ZodEnum<{
-        textfield: "textfield";
         javascript: "javascript";
         python: "python";
+        textfield: "textfield";
         textarea: "textarea";
         datepicker: "datepicker";
         hidden: "hidden";
@@ -55,9 +55,9 @@ export declare const stringPropertySchema: z.ZodIntersection<z.ZodIntersection<z
     isSecret: z.ZodOptional<z.ZodLiteral<false>>;
 }, z.z.core.$strip>, z.ZodObject<{
     editor: z.ZodEnum<{
-        textfield: "textfield";
         javascript: "javascript";
         python: "python";
+        textfield: "textfield";
         textarea: "textarea";
         hidden: "hidden";
         fileupload: "fileupload";
