@@ -24,7 +24,7 @@ function defineDataset<
     console.log(path);
     return input;
 }
-export function checkDatasetFields<
+export function validateDatasetFieldsWithSchema<
     PassthroughType extends Dataset['fields'],
     Fields extends JSONSchema,
     Properties extends string | never,

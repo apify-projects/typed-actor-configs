@@ -70,10 +70,10 @@ The documentation for the dataset schema can be found [here](https://docs.apify.
 For example, you can define it like this. Note that the fields definition is JSON schema compliant.
 
 ```typescript
-import { checkDatasetFields, type InferDataset } from 'typed-actor-configs';
+import { validateDatasetFieldsWithSchema, type InferDataset } from 'typed-actor-configs';
 import MyDataset from './dataset.json' with { type: 'json' };
 
-const dataset = checkDatasetFields(MyDataset, {
+const dataset = validateDatasetFieldsWithSchema(MyDataset, {
     actorSpecification: 1,
     title: 'My Dataset',
     description: 'This is my dataset',
@@ -105,7 +105,7 @@ On the other hand, the type of `url` is `string` because it is required.
 
 On input schemas this behavior is different. Since its an input all fields are considered already defaulted.
 
-Additionally, since `checkDatasetFields` does not emit a `dataset_schema.json` file, you can just import your dataset json file and pass it to `checkDatasetFields` directly for validation.
+Additionally, since `validateDatasetFieldsWithSchema` does not emit a `dataset_schema.json` file, you can just import your dataset json file and pass it to `validateDatasetFieldsWithSchema` directly for validation.
 
 After everything is defined, you can just import the `DatasetItem` type and use it as a type for your dataset.
 

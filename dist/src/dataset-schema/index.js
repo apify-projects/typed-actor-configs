@@ -4,7 +4,7 @@ function defineDataset(path, input) {
     console.log(path);
     return input;
 }
-export function checkDatasetFields(config, input) {
+export function validateDatasetFieldsWithSchema(config, input) {
     const diff = diffConfigurations(config.fields, input.fields);
     if (diff) {
         console.log(`\n${redBG('FAILED')}: Type-critical fields dont match, check changes`);
