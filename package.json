@@ -1,6 +1,6 @@
 {
     "name": "typed-actor-configs",
-    "version": "0.10.3",
+    "version": "0.10.5",
     "description": "Define Apify Actor inputs and outputs in a convenient and type-safe way that does not increase bundle size",
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
@@ -47,8 +47,5 @@
         "@types/node": "^24.5.2",
         "typescript": "^5.9.2",
         "vitest": "^3.2.4"
-    },
-    "peerDependencies": {
-        "typescript-plugin-json-const": "^0.6.1"
     }
 }
