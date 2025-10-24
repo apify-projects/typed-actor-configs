@@ -2,16 +2,16 @@
     "extends": "@apify/tsconfig",
     "files": ["./index.ts"],
     "compilerOptions": {
-        "module": "NodeNext",
-        "moduleResolution": "NodeNext",
+        "module": "es2022",
         "target": "ES2022",
         "outDir": "dist",
         "strict": true,
         "noUnusedLocals": false,
         "skipLibCheck": true,
+        "allowArbitraryExtensions": true,
         "rewriteRelativeImportExtensions": true,
         "lib": ["ESNext"]
     },
     "include": ["./src/**/*", "index.ts"],
-    "exclude": ["node_modules", "dist", "**/*.test.ts"]
+    "exclude": ["node_modules", "dist", "**/*.test.ts", ".actor"]
 }

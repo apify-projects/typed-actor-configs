@@ -45,7 +45,7 @@ export type StringEnumProperty = FromSchema<
     { keepDefaultedPropertiesOptional: true; parseIfThenElseKeywords: true; parseNotKeyword: true }
 >;
 
-export type InferEnumProperty<T extends { readonly enum: readonly string[]; readonly nullable?: boolean }> = T extends {
+export type InferEnumProperty<T extends { enum: string[]; nullable?: boolean }> = T extends {
     enum: (infer E)[];
     nullable?: boolean;
 }

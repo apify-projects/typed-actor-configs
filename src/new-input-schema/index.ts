@@ -1,4 +1,3 @@
-import { type FromSchema, JSONSchema } from 'json-schema-to-ts';
 import stringEnumProperty, {
     type StringEnumProperty,
     type InferEnumProperty,
@@ -44,10 +43,16 @@ import arrayProperty, {
     type ArrayProperty,
     type ArrayPropertyDependencies,
 } from './json-schemas/array-property.ts';
-import { DefaultedFields, RequiredKeys, Resolve, TrimTitleAndDescription } from './json-schemas/types.ts';
+import {
+    DeepReadonly,
+    DeepWriteable,
+    DefaultedFields,
+    Resolve,
+    TrimTitleAndDescription,
+} from './json-schemas/types.ts';
 import { existsSync, readFileSync, writeFileSync } from 'fs';
 import { diffConfigurations } from '../versioning/config-diff/index.ts';
-import { greenBG, redBG, yellowBG } from '../text-coloring/index.ts';
+import { greenBG, yellowBG } from '../text-coloring/index.ts';
 import { execArgs, initializeExecArgs } from '../input-schema/exec-args.ts';
 import { createPathToFile } from '../filesystem.ts';
 import { cwd } from 'process';
@@ -73,21 +78,23 @@ type InputSchema = {
 };
 
 type MinimalInputSchema = TrimTitleAndDescription<InputSchema>;
-type requiredKeys<T extends MinimalInputSchema> = T extends { required: (infer R)[] } ? R : '';
+type requiredKeys<T extends DeepReadonly<{ required?: string[] }>> = T extends { required: readonly (infer R)[] }
+    ? R
+    : '';
 
-export type InferInput<T extends MinimalInputSchema> = Resolve<
+export type InferInput<T extends DeepReadonly<InputSchema>> = Resolve<
     {
         -readonly [Key in keyof T['properties'] & (requiredKeys<T> | DefaultedFields<T>)]: inferProperty<
-            T['properties'][Key]
+            DeepWriteable<T['properties'][Key]>
         >;
     } & {
         -readonly [Key in Exclude<keyof T['properties'], requiredKeys<T> | DefaultedFields<T>>]?: inferProperty<
-            T['properties'][Key]
+            DeepWriteable<T['properties'][Key]>
         >;
     }
 >;
 
-type inferProperty<T extends MinimalInputSchema['properties'][string]> = T extends StringEnumProperty
+type inferProperty<T extends DeepWriteable<MinimalInputSchema['properties'][string]>> = T extends StringEnumProperty
     ? InferEnumProperty<T>
     : T extends IntegerProperty
     ? InferIntegerProperty<T>
