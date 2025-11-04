@@ -91,15 +91,24 @@ export type ArrayItemsRequestListSources = FromSchema<
     typeof arrayItemsRequestListSources,
     { keepDefaultedPropertiesOptional: true; parseIfThenElseKeywords: true; parseNotKeyword: true }
 >;
+type Method = 'get' | 'post' | 'put' | 'patch' | 'delete' | 'head' | 'options' | 'trace';
 
 type InferArrayItemsRequestListSourcesProps<
     T extends Exclude<ArrayItemsRequestListSources['properties'], undefined>,
-    RequiredKeys extends string | never
+    RequiredKeys extends string | never,
 > = Resolve<
     {
-        [Key in keyof T & RequiredKeys]: T[Key] extends { type: 'string' } ? string : object;
+        [Key in keyof T & RequiredKeys]: T[Key] extends { type: 'string' }
+            ? Key extends 'method'
+                ? Method
+                : string
+            : object;
     } & {
-        [Key in Exclude<keyof T, RequiredKeys>]?: T[Key] extends { type: 'string' } ? string : object;
+        [Key in Exclude<keyof T, RequiredKeys>]?: T[Key] extends { type: 'string' }
+            ? Key extends 'method'
+                ? Method
+                : string
+            : object;
     }
 >;
 
@@ -109,7 +118,7 @@ export type InferArrayItemsRequestListSources<T extends ArrayItemsRequestListSou
     ? InferArrayItemsRequestListSourcesProps<T['properties'], RequiredKeys<T>>
     : {
           url?: string;
-          method?: string;
+          method?: Method;
           payload?: string;
           userData?: object;
           headers?: object;
