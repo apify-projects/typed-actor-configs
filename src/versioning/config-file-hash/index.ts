@@ -1,4 +1,4 @@
-import { hash } from 'crypto';
+import { hash } from 'node:crypto';
 import z, { ZodObject } from 'zod';
 import { green, red, redBG, yellowBG } from '../../text-coloring/index.ts';
 
